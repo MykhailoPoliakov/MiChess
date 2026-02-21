@@ -60,55 +60,6 @@ def create_dict():
 
 
 """
-def horse_move_checker(place_h,number,which_board):
-    if str((int(place_h) + number)) in all_pos:
-        if which_board[str(int(place_h) + number)] not in all_player_pieces:
-            all_possible_moves_dict['dict' + place_h][str(int(place_h) + number)] = 'x '
-        if threats_check_work:
-            all_possible_moves_dict['dict' + place_h][str(int(place_h) + number)] = 'x '
-
-def rook_move_checker(place_r,number1,number2,switch,which_board):
-    if 1 <= number1 <= 8 and switches[switch]:
-        if threats_check_work:
-            all_possible_moves_dict['dict' + place_r][str(int(place_r) + number2)] = 'x '
-            if which_board[str(int(place_r) + number2)] in all_op_player_pieces_no_k:
-                switches[switch] = False
-            if which_board[str(int(place_r) + number2)] in all_player_pieces:
-                switches[switch] = False
-        else:
-            if which_board[str(int(place_r) + number2)] in all_player_pieces:
-                switches[switch] = False
-            else:
-                all_possible_moves_dict['dict' + place_r][str(int(place_r) + number2)] = 'x '
-                if which_board[str(int(place_r) + number2)] in all_op_player_pieces_no_k:
-                    switches[switch] = False
-
-def bishop_move_checker(place_b,number1,number2,switch,which_board):
-    if 1 <= number1 <= 8 and 1 <= number2 <= 8 and switches[switch]:
-        if threats_check_work:
-            all_possible_moves_dict['dict' + place_b][str(number1) + str(number2)] = 'x '
-            if which_board[str(number1) + str(number2)] in all_op_player_pieces_no_k:
-                switches[switch] = False
-            if which_board[str(number1) + str(number2)] in all_player_pieces:
-                switches[switch] = False
-        else:
-            if which_board[str(number1) + str(number2)] in all_player_pieces:
-                switches[switch] = False
-            else:
-                all_possible_moves_dict['dict' + place_b][str(number1) + str(number2)] = 'x '
-                if which_board[str(number1) + str(number2)] in all_op_player_pieces_no_k:
-                    switches[switch] = False
-
-def castle_rook_checker():
-    if start_pos == '11':
-        restart_switches['castle_left_w'] = False
-    if start_pos == '81':
-        restart_switches['castle_right_w'] = False
-    if start_pos == '18':
-        restart_switches['castle_left_b'] = False
-    if start_pos == '88':
-        restart_switches['castle_right_b'] = False
-
 def castle_move_checker(place_k,number,which_board,pos2,pos3,old_rook_pos,wr_or_br_c,board_ext,threats_check_ext):
     if which_board[pos2] == '  ' and which_board[pos3] == '  ' and board_ext and which_board[old_rook_pos] == wr_or_br_c:
         if threats_check[pos2] == '  ' and threats_check[pos3] == '  ' and threats_check_ext and threats_check[place_k] == '  ':
@@ -154,99 +105,154 @@ def pawn_move_checker(place_p,player_1,which_board):
             if (player == 'w' and place_p[1] == '5') or (player == 'b' and place_p[1] == '4'):
                 if int(place_p[0]) + 1 in el_passant:
                     all_possible_moves_dict['dict' + place_p][str(int(place_p) + player_1 + 10)] = 'x '
-
-def moves_checker(which_board):
-    global big_op_king_move_dict
-    big_op_king_move_dict = empty_dict.copy()
-    for keys4 in all_possible_moves_dict.keys():
-        all_possible_moves_dict[keys4] = empty_dict.copy()
-    for place in which_board.keys():
-        for switch in switches:
-            switches[switch] = True
-        if which_board[place] == player + 'p':
-            if threats_check_work:
-                threat_pawn_move_checker(place, which_board)
-            else:
-                if which_board[place] == 'wp':
-                    pawn_move_checker(place, + 1, which_board)
-                if which_board[place] == 'bp':
-                    pawn_move_checker(place, - 1, which_board)
-        if which_board[place] == player + 'h':
-            horse_move_checker(place, - 2 + 10, which_board)
-            horse_move_checker(place, + 2 - 10, which_board)
-            horse_move_checker(place, - 2 - 10, which_board)
-            horse_move_checker(place, + 2 + 10, which_board)
-            horse_move_checker(place, - 1 + 20, which_board)
-            horse_move_checker(place, + 1 - 20, which_board)
-            horse_move_checker(place, - 1 - 20, which_board)
-            horse_move_checker(place, + 1 + 20, which_board)
-        if which_board[place] == player + 'r':
-            inside_let = 10
-            inside_num = 1
-            place_let = int(place[0])
-            place_num = int(place[1])
-            for i in range(7):
-                rook_move_checker(place, place_let + inside_num, + inside_let, 'r_switch_1', which_board)
-                rook_move_checker(place, place_let - inside_num, - inside_let, 'r_switch_2', which_board)
-                rook_move_checker(place, place_num + inside_num, + inside_num, 'r_switch_3', which_board)
-                rook_move_checker(place, place_num - inside_num, - inside_num, 'r_switch_4', which_board)
-                inside_let += 10
-                inside_num += 1
-        if which_board[place] == player + 'b':
-            inside_let = 10
-            inside_num = 1
-            place_let = int(place[0])
-            place_num = int(place[1])
-            for i in range(7):
-                bishop_move_checker(place,place_let + inside_num, place_num + inside_num, 'b_switch_1', which_board)
-                bishop_move_checker(place,place_let - inside_num, place_num - inside_num, 'b_switch_2', which_board)
-                bishop_move_checker(place,place_let + inside_num, place_num - inside_num, 'b_switch_3', which_board)
-                bishop_move_checker(place,place_let - inside_num, place_num + inside_num, 'b_switch_4', which_board)
-                inside_let += 10
-                inside_num += 1
-        if which_board[place] == player + 'k':
-            king_move_checker(place, - 1 + 10, which_board)
-            king_move_checker(place, + 1 - 10, which_board)
-            king_move_checker(place, - 1 - 10, which_board)
-            king_move_checker(place, + 1 + 10, which_board)
-            king_move_checker(place, - 1, which_board)
-            king_move_checker(place, + 1, which_board)
-            king_move_checker(place, - 10, which_board)
-            king_move_checker(place, + 10, which_board)
-            if place == '51' and restart_switches['castle_left_w']:
-                castle_move_checker(place, '31', which_board, '41', '31', '11', 'wr', which_board['21'] == '  ', threats_check['21'] == '  ')
-            if place == '51' and restart_switches['castle_right_w']:
-                castle_move_checker(place, '71', which_board, '61', '71', '81', 'wr', True, True)
-            if place == '58' and restart_switches['castle_left_b']:
-                castle_move_checker(place, '38', which_board, '48', '38', '18', 'br', which_board['28'] == '  ', threats_check['28'] == '  ')
-            if place == '58' and restart_switches['castle_right_b']:
-                castle_move_checker(place, '78', which_board, '68', '78', '88', 'br', True, True)
-        if which_board[place] == player + 'q':
-            inside_let = 10
-            inside_num = 1
-            place_let = int(place[0])
-            place_num = int(place[1])
-            for i in range(7):
-                rook_move_checker(place, place_let + inside_num, + inside_let, 'q_switch_1', which_board)
-                rook_move_checker(place, place_let - inside_num, - inside_let, 'q_switch_2', which_board)
-                rook_move_checker(place, place_num + inside_num, + inside_num, 'q_switch_3', which_board)
-                rook_move_checker(place, place_num - inside_num, - inside_num, 'q_switch_4', which_board)
-                bishop_move_checker(place,place_let + inside_num, place_num + inside_num, 'q_switch_5', which_board)
-                bishop_move_checker(place,place_let - inside_num, place_num - inside_num, 'q_switch_6', which_board)
-                bishop_move_checker(place,place_let + inside_num, place_num - inside_num, 'q_switch_7', which_board)
-                bishop_move_checker(place,place_let - inside_num, place_num + inside_num, 'q_switch_8', which_board)
-                inside_let += 10
-                inside_num += 1
-        if which_board[place] == opposite_player + 'k':
-            op_king_move_checker(place, - 1 + 10, which_board)
-            op_king_move_checker(place, + 1 - 10, which_board)
-            op_king_move_checker(place, - 1 - 10, which_board)
-            op_king_move_checker(place, + 1 + 10, which_board)
-            op_king_move_checker(place, - 1, which_board)
-            op_king_move_checker(place, + 1, which_board)
-            op_king_move_checker(place, - 10, which_board)
-            op_king_move_checker(place, + 10, which_board)
 """
+def moves_checker(input_board, output_board, threats_check_work=False):
+    """checks all the possible player moves"""
+
+    def horse_move_checker(number):
+        if str((int(place) + number)) in state.all_pos:
+            if input_board[str(int(place) + number)] not in state.player_pieces:
+                output_board['dict' + place][str(int(place) + number)] = 'x '
+
+    def bishop_move_checker(number1, number2, switch):
+        if 1 <= number1 <= 8 and 1 <= number2 <= 8 and switches[switch]:
+            if threats_check_work:
+                output_board['dict' + place][str(number1) + str(number2)] = 'x '
+                if input_board[str(number1) + str(number2)] in state.player_pieces_no_k:
+                    switches[switch] = False
+                if input_board[str(number1) + str(number2)] in state.player_pieces:
+                    switches[switch] = False
+                return
+            if input_board[str(number1) + str(number2)] in state.player_pieces:
+                switches[switch] = False
+            else:
+                output_board['dict' + place][str(number1) + str(number2)] = 'x '
+                if input_board[str(number1) + str(number2)] in state.opponent_pieces_no_k:
+                    switches[switch] = False
+
+    def rook_move_checker(number1, number2, switch):
+        if 1 <= number1 <= 8 and switches[switch]:
+            if threats_check_work:
+                output_board['dict' + place][str(int(place) + number2)] = 'x '
+                if input_board[str(int(place) + number2)] in state.opponent_pieces_no_k or \
+                input_board[str(int(place) + number2)] in state.player_pieces:
+                    switches[switch] = False
+                return
+            if input_board[str(int(place) + number2)] in state.player_pieces:
+                switches[switch] = False
+            else:
+                output_board['dict' + place][str(int(place) + number2)] = 'x '
+                if input_board[str(int(place) + number2)] in state.player_pieces_no_k:
+                    switches[switch] = False
+
+    #global big_op_king_move_dict
+    #big_op_king_move_dict = empty_dict.copy()
+
+    # nested or basic dict for output
+    if threats_check_work:
+        output_board = state.empty_dict.copy()
+    else:
+        output_board  = state.double_dict.copy()
+
+    # all possible moves calculation
+    for place in input_board.keys():
+
+        if input_board[place][0] == state.player:
+            switches = {
+                'r_switch_1': True, 'r_switch_2': True, 'r_switch_3': True, 'r_switch_4': True,
+                'b_switch_1': True, 'b_switch_2': True, 'b_switch_3': True, 'b_switch_4': True,
+                'q_switch_1': True, 'q_switch_2': True, 'q_switch_3': True, 'q_switch_4': True,
+                'q_switch_5': True, 'q_switch_6': True, 'q_switch_7': True, 'q_switch_8': True, }
+
+            if input_board[place][1] == 'p':
+                if threats_check_work:
+                    threat_pawn_move_checker(place, input_board)
+                else:
+                    if input_board[place] == 'wp':
+                        pawn_move_checker(place, + 1, input_board)
+                    if input_board[place] == 'bp':
+                        pawn_move_checker(place, - 1, input_board)
+
+            elif input_board[place][1] == 'h':
+                horse_move_checker(- 2 + 10)
+                horse_move_checker(+ 2 - 10)
+                horse_move_checker(- 2 - 10)
+                horse_move_checker(+ 2 + 10)
+                horse_move_checker(- 1 + 20)
+                horse_move_checker(+ 1 - 20)
+                horse_move_checker(- 1 - 20)
+                horse_move_checker(+ 1 + 20)
+
+            elif input_board[place][1] == 'r':
+                inside_let = 10
+                inside_num = 1
+                place_let = int(place[0])
+                place_num = int(place[1])
+                for i in range(7):
+                    rook_move_checker(place_let + inside_num,   inside_let, 'r_switch_1')
+                    rook_move_checker(place_let - inside_num, - inside_let, 'r_switch_2')
+                    rook_move_checker(place_num + inside_num,   inside_num, 'r_switch_3')
+                    rook_move_checker(place_num - inside_num, - inside_num, 'r_switch_4')
+                    inside_let += 10
+                    inside_num += 1
+
+            elif input_board[place][1] == 'b':
+                inside_let = 10
+                inside_num = 1
+                place_let = int(place[0])
+                place_num = int(place[1])
+                for i in range(7):
+                    bishop_move_checker(place_let + inside_num, place_num + inside_num, 'b_switch_1')
+                    bishop_move_checker(place_let - inside_num, place_num - inside_num, 'b_switch_2')
+                    bishop_move_checker(place_let + inside_num, place_num - inside_num, 'b_switch_3')
+                    bishop_move_checker(place_let - inside_num, place_num + inside_num, 'b_switch_4')
+                    inside_let += 10
+                    inside_num += 1
+
+            elif input_board[place][1] == 'k':
+                king_move_checker(place, - 1 + 10, input_board)
+                king_move_checker(place, + 1 - 10, input_board)
+                king_move_checker(place, - 1 - 10, input_board)
+                king_move_checker(place, + 1 + 10, input_board)
+                king_move_checker(place, - 1, input_board)
+                king_move_checker(place, + 1, input_board)
+                king_move_checker(place, - 10, input_board)
+                king_move_checker(place, + 10, input_board)
+                if place == '51' and restart_switches['castle_left_w']:
+                    castle_move_checker(place, '31', input_board, '41', '31', '11', 'wr', input_board['21'] == '  ', threats_check['21'] == '  ')
+                if place == '51' and restart_switches['castle_right_w']:
+                    castle_move_checker(place, '71', input_board, '61', '71', '81', 'wr', True, True)
+                if place == '58' and restart_switches['castle_left_b']:
+                    castle_move_checker(place, '38', input_board, '48', '38', '18', 'br', input_board['28'] == '  ', threats_check['28'] == '  ')
+                if place == '58' and restart_switches['castle_right_b']:
+                    castle_move_checker(place, '78', input_board, '68', '78', '88', 'br', True, True)
+
+            elif input_board[place][1] == 'q':
+                inside_let = 10
+                inside_num = 1
+                place_let = int(place[0])
+                place_num = int(place[1])
+                for i in range(7):
+                    rook_move_checker(place_let + inside_num, + inside_let, 'q_switch_1')
+                    rook_move_checker(place_let - inside_num, - inside_let, 'q_switch_2')
+                    rook_move_checker(place_num + inside_num, + inside_num, 'q_switch_3')
+                    rook_move_checker(place_num - inside_num, - inside_num, 'q_switch_4')
+                    bishop_move_checker(place_let + inside_num, place_num + inside_num, 'q_switch_5')
+                    bishop_move_checker(place_let - inside_num, place_num - inside_num, 'q_switch_6')
+                    bishop_move_checker(place_let + inside_num, place_num - inside_num, 'q_switch_7')
+                    bishop_move_checker(place_let - inside_num, place_num + inside_num, 'q_switch_8')
+                    inside_let += 10
+                    inside_num += 1
+
+            elif input_board[place] == opposite_player + 'k':
+                op_king_move_checker(place, - 1 + 10, input_board)
+                op_king_move_checker(place, + 1 - 10, input_board)
+                op_king_move_checker(place, - 1 - 10, input_board)
+                op_king_move_checker(place, + 1 + 10, input_board)
+                op_king_move_checker(place, - 1, input_board)
+                op_king_move_checker(place, + 1, input_board)
+                op_king_move_checker(place, - 10, input_board)
+                op_king_move_checker(place, + 10, input_board)
 
 
 
@@ -257,9 +263,24 @@ class GameState:
         # start values
         self.mode = "game"
 
+        # switches
+        self.switches = {
+            'r_switch_1': True,'r_switch_2': True,'r_switch_3': True,'r_switch_4': True,
+            'b_switch_1': True,'b_switch_2': True,'b_switch_3': True,'b_switch_4': True,
+            'q_switch_1': True,'q_switch_2': True,'q_switch_3': True,'q_switch_4': True,
+            'q_switch_5': True,'q_switch_6': True,'q_switch_7': True,'q_switch_8': True,}
+        self.castle_switches = {'castle_left_w':True,'castle_right_w':True,'castle_left_b':True,'castle_right_b':True,}
+
         # placeholders
         self.color = None
         self.game_mode = None
+
+        self.player = None
+        self.opponent = None
+        self.player_pieces = None
+        self.opponent_pieces = None
+        self.player_pieces_no_k = None
+        self.opponent_pieces_no_k = None
 
         # dictionaries
         self.possible_moves = self.double_dict.copy()
@@ -276,6 +297,34 @@ class GameState:
             '12': "wp", '22': "wp", '32': "wp", '42': "wp", '52': "wp", '62': "wp", '72': "wp", '82': "wp",
             '11': "wr", '21': "wh", '31': "wb", '41': "wq", '51': "wk", '61': "wb", '71': "wh", '81': "wr",}
 
+    def player_change(self, side = ''):
+        # changing side if no argument given
+        if not side:
+            self.player = 'b' if self.player == 'w' else 'w'
+        else:
+            # changing side to match the argument
+            self.player = side
+
+        # update all values to the current side
+        if self.player == 'w':  # moves tracker
+            self.opponent = 'b'
+            self.player_pieces = white_pieces
+            self.opponent_pieces = black_pieces
+            self.player_pieces_no_k = white_pieces_no_k
+            self.opponent_pieces_no_k = black_pieces_no_k
+            player_int = 'White'
+            op_player_int = 'Black'
+            pawn_player = + 1
+        elif self.player == 'b':
+            self.opponent = 'w'
+            self.player_pieces = black_pieces
+            self.opponent_pieces = white_pieces
+            self.player_pieces_no_k = black_pieces_no_k
+            self.opponent_pieces_no_k = white_pieces_no_k
+            player_int = 'Black'
+            op_player_int = 'White'
+            pawn_player = - 1
+
 
 class PlayerSettings:
     def __init__(self):
@@ -286,15 +335,6 @@ class PlayerSettings:
 
 sett = PlayerSettings()
 state = GameState()
-
-
-class Buttons:
-    def __init__(self,name):
-        pass
-
-    def click(self):
-        pass
-
 
 
 """ MAIN CYCLE """
