@@ -8,6 +8,8 @@ pygame.init()
 screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN | pygame.SCALED)
 clock = pygame.time.Clock()
 background_color = (0,0,0)
+mini_font = pygame.font.Font(None, 25)
+font = pygame.font.Font(None, 50)
 
 """ Constants """
 white_pieces = ('wq','wk','wr','wh','wb','wp')
@@ -46,6 +48,8 @@ textures = {
 }
 textures['board'] = pygame.transform.scale(textures['board'], (1080, 1080))
 textures['dot'] = pygame.transform.scale(textures['dot'], (10, 10))
+textures['mini_board'] = pygame.transform.scale(textures['board'], (220, 220))
+textures['mini_board'].set_alpha(90)
 
 
 """ Functions """
@@ -60,9 +64,6 @@ def create_dict():
     for square in all_pos:
         double_dict['dict' + square] = empty_dict
     return all_pos, empty_dict, double_dict
-
-
-
 
 
 """ Classes """
@@ -98,7 +99,9 @@ class GameState:
         # dictionaries
         self.comb_possible_moves = copy.deepcopy(self.empty_dict)
         self.comb_threat_moves = copy.deepcopy(self.empty_dict)
+        self.comb_cover_moves = copy.deepcopy(self.empty_dict)
 
+        self.cover_moves = copy.deepcopy(self.double_dict)
         self.possible_moves = copy.deepcopy(self.double_dict)
         self.op_possible_moves = copy.deepcopy(self.double_dict)
         self.threat_moves = copy.deepcopy(self.double_dict)
@@ -373,85 +376,107 @@ class GameState:
 
 
 
-
-    def king_movement(self, start_pos, end_pos):
-        def castle_movement(king_pos, pos2, pos3, board_ext, threats_check_ext, new_rook_pos,old_rook_pos, ):
-            if self.board[pos2] == '  ' and self.board[pos3] == '  ' and board_ext and self.board[old_rook_pos] == self.player + 'r' and \
-            self.comb_threat_moves[pos2] == '  ' and self.comb_threat_moves[pos3] == '  ' and threats_check_ext and \
-            self.comb_threat_moves[king_pos] == '  ':
-
-                self.board[new_rook_pos] = self.player + 'r'
-                self.board[old_rook_pos] = '  '
-
-        if self.player == 'w' and start_pos == '51' and end_pos == '31' and self.castle_switches['castle_left_w']:
-            castle_movement('51', '41', '31', self.board['21'] == '  ', self.comb_threat_moves['21'] == '  ', '41', '11')
-
-        if self.player == 'w' and start_pos == '51' and end_pos == '71' and self.castle_switches['castle_right_w']:
-            castle_movement('51', '61', '71', True, True, '61', '81')
-
-        if self.player == 'b' and start_pos == '58' and end_pos == '38' and self.castle_switches['castle_left_b']:
-            castle_movement('58', '48', '38', self.board['28'] == '  ', self.comb_threat_moves['28'] == '  ', '48', '18')
-
-        if self.player == 'b' and start_pos == '58' and end_pos == '78' and self.castle_switches['castle_right_b']:
-            castle_movement('58', '68', '78', True, True, '68', '88')
-
-
-        self.castle_switches[f'castle_left_{state.board[start_pos][0]}'] = False
-        self.castle_switches[f'castle_right_{state.board[start_pos][0]}'] = False
-        self.make_move(start_pos, end_pos)
-
-
     def movement(self, start_pos, end_pos):
-        # if move is legal
-        if self.board[start_pos][0] == self.player and self.possible_moves['dict' + start_pos][end_pos] == 'x ':
-            # checking if the move is legal
-            test_board = copy.deepcopy(self.board)
-            test_board[end_pos] = test_board[start_pos]
-            test_board[start_pos] = '  '
+        # checking if the move is legal
+        if self.board[start_pos][0] != self.player or self.possible_moves['dict' + start_pos][end_pos] != 'x ':
+            print('no move')
+            return
 
-            self.player_change()
-            test_threat_check, solo_test_threat_check = self.moves_checker(test_board, True)
-            self.player_change()
+        test_board = copy.deepcopy(self.board)
+        test_board[end_pos] = test_board[start_pos]
+        test_board[start_pos] = '  '
 
-            for place in test_board:  # check checker
-                if test_board[place] == self.player + 'k':
-                    if solo_test_threat_check[place] == 'x ':
-                        print(solo_test_threat_check[place])
-                        return
-                    break
+        self.player_change()
+        test_threat_check, solo_test_threat_check = self.moves_checker(test_board, True)
+        self.player_change()
 
-            # el passant rules for pawns
-            if self.board[start_pos][1] == 'p':
-                # if el passant was activated and capture should be done
-                if (self.player == 'w' and start_pos[1] == '5') or (self.player == 'b' and start_pos[1] == '4') and \
-                end_pos[1] == start_pos[1] + self.pawn_direction and end_pos[0] in [start_pos[0] + 1, start_pos[0] - 1] and \
-                self.board[str(end_pos[0]) + str(start_pos[1])] == self.opponent + 'p' and end_pos[0] in  self.el_passant[1]:
-                    self.el_passant[1] = True
-                # added row to el passant list where was 2 square move
-                elif str(int(start_pos[1]) + 2) == end_pos[1] or str(int(start_pos[1]) - 2) == end_pos[1]:
-                    self.el_passant[1].append(int(start_pos[0]))
+        for place in test_board:  # check checker
+            if test_board[place] == self.player + 'k':
+                if solo_test_threat_check[place] == 'x ':
+                    print('no move')
+                    return
+                break
 
-            # castle rules for rooks
-            elif self.board[start_pos][1] == 'r':
-                if start_pos == '11':
-                    self.castle_switches['castle_left_w'] = False
-                if start_pos == '81':
-                    self.castle_switches['castle_right_w'] = False
-                if start_pos == '18':
-                    self.castle_switches['castle_left_b'] = False
-                if start_pos == '88':
-                    self.castle_switches['castle_right_b'] = False
+        # IF THE MOVE IS LEGAL
 
-            # castle rules for kings
-            elif self.board[start_pos][1] == 'k':
-                self.king_movement(start_pos, end_pos)
+        # el passant rules for pawns
+        if self.board[start_pos][1] == 'p':
+            # if el passant was activated and capture should be done
+            if (self.player == 'w' and start_pos[1] == '5') or (self.player == 'b' and start_pos[1] == '4') and \
+                    end_pos[1] == start_pos[1] + self.pawn_direction and end_pos[0] in [start_pos[0] + 1,
+                                                                                        start_pos[0] - 1] and \
+                    self.board[str(end_pos[0]) + str(start_pos[1])] == self.opponent + 'p' and end_pos[0] in \
+                    self.el_passant[1]:
+                self.el_passant[1] = True
+            # added row to el passant list where was 2 square move
+            elif str(int(start_pos[1]) + 2) == end_pos[1] or str(int(start_pos[1]) - 2) == end_pos[1]:
+                self.el_passant[1].append(int(start_pos[0]))
 
-            # making a move
-            print('move')
+        # castle rules for rooks
+        elif self.board[start_pos][1] == 'r':
+            if start_pos == '11':
+                self.castle_switches['castle_left_w'] = False
+            elif start_pos == '81':
+                self.castle_switches['castle_right_w'] = False
+            elif start_pos == '18':
+                self.castle_switches['castle_left_b'] = False
+            elif start_pos == '88':
+                self.castle_switches['castle_right_b'] = False
+
+        # castle rules for kings
+        elif self.board[start_pos][1] == 'k':
+            def castle_movement(king_pos, pos2, pos3, board_ext, threats_check_ext, new_rook_pos, old_rook_pos, ):
+                if self.board[pos2] == '  ' and self.board[pos3] == '  ' and board_ext and self.board[
+                    old_rook_pos] == self.player + 'r' and \
+                        self.comb_threat_moves[pos2] == '  ' and self.comb_threat_moves[
+                    pos3] == '  ' and threats_check_ext and \
+                        self.comb_threat_moves[king_pos] == '  ':
+                    self.board[new_rook_pos] = self.player + 'r'
+                    self.board[old_rook_pos] = '  '
+
+            if self.player == 'w' and start_pos == '51' and end_pos == '31' and self.castle_switches['castle_left_w']:
+                castle_movement('51', '41', '31', self.board['21'] == '  ', self.comb_threat_moves['21'] == '  ',
+                                '41',
+                                '11')
+
+            elif self.player == 'w' and start_pos == '51' and end_pos == '71' and self.castle_switches['castle_right_w']:
+                castle_movement('51', '61', '71', True, True, '61', '81')
+
+            elif self.player == 'b' and start_pos == '58' and end_pos == '38' and self.castle_switches['castle_left_b']:
+                castle_movement('58', '48', '38', self.board['28'] == '  ', self.comb_threat_moves['28'] == '  ',
+                                '48',
+                                '18')
+
+            elif self.player == 'b' and start_pos == '58' and end_pos == '78' and self.castle_switches['castle_right_b']:
+                castle_movement('58', '68', '78', True, True, '68', '88')
+
+            self.castle_switches[f'castle_left_{state.board[start_pos][0]}'] = False
+            self.castle_switches[f'castle_right_{state.board[start_pos][0]}'] = False
             self.make_move(start_pos, end_pos)
 
-        else:
-            print('no move')
+        # making a move
+        print('move')
+        self.make_move(start_pos, end_pos)
+
+        # updating dictionaries
+        self.dict_update()
+
+        # check and draw check
+        self.check_check()
+        self.draw_check()
+
+    def dict_update(self):
+        # updating dictionaries (possible moves)
+        self.possible_moves, self.comb_possible_moves = self.moves_checker(self.board)
+
+        # updating dictionaries (player cover moves)
+        self.cover_moves, self.comb_cover_moves = self.moves_checker(self.board, True)
+
+        # updating dictionaries (opponent threat moves)
+        self.player_change()
+        self.threat_moves, self.comb_threat_moves = self.moves_checker(self.board, True)
+        self.player_change()
+
 
 
 
@@ -469,22 +494,18 @@ class PlayerSettings:
 sett = PlayerSettings()
 state = GameState()
 
-
 """ MAIN CYCLE """
 state.player_change('w')
+state.dict_update()
 
-state.possible_moves, state.comb_possible_moves = state.moves_checker(state.board)
-
-state.player_change()
-state.threat_moves, state.comb_threat_moves = state.moves_checker(state.board, True)
-state.player_change()
-
+action = ()
 running = True
 while running:
 
     """ BRAIN """
-    pass
-
+    if action:
+        state.movement(*action)
+        action = ()
 
     """ INPUT """
 
@@ -495,32 +516,20 @@ while running:
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             running = False
 
-        # testing
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_t:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
+            sett.f3 = not sett.f3
 
-            state.movement('87', '86')
-
-            state.possible_moves, state.comb_possible_moves = state.moves_checker(state.board)
-
-            state.player_change()
-            state.threat_moves, state.comb_threat_moves = state.moves_checker(state.board, True)
-            state.player_change()
-
-            state.check_check()
-            state.draw_check()
 
         # testing
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_g:
-            state.movement('12', '13')
+            action = ('52', '13')
 
-            state.possible_moves, state.comb_possible_moves = state.moves_checker(state.board)
+        # testing
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_t:
+            action = ('87', '86')
 
-            state.player_change()
-            state.threat_moves, state.comb_threat_moves = state.moves_checker(state.board, True)
-            state.player_change()
 
-            state.check_check()
-            state.draw_check()
+
 
     """ OUTPUT """
 
@@ -531,31 +540,42 @@ while running:
     if state.mode == "game":
         # board
         screen.blit(textures['board'], (420, 0))
-        pygame.draw.rect(screen, (10, 10, 10), (0, 70, 200, 200))
-        pygame.draw.rect(screen, (10, 10, 10), (0, 300, 200, 200))
-        pygame.draw.rect(screen, (10, 10, 10), (0, 530, 200, 200))
 
         # pieces output
         for key in state.board:
             if state.board[key] != "  ":
                 screen.blit(textures['pieces'][state.board[key]], (460 + (int(key[0]) - 1) * 125, 905 - (int(key[1]) - 1) * 125))
 
+
+    # if F3 pressed
+    if sett.f3:
+
         # possible moves output
+        screen.blit(textures['mini_board'], ( 0, 55))
+        text = mini_font.render("possible moves output", True, (255, 255, 255))
+        screen.blit(text, (0, 50))
         for key in state.comb_possible_moves:
             if state.comb_possible_moves[key] != '  ':
-                screen.blit(textures['dot'], (0 + (int(key[0]) -1) * 25, 245 - (int(key[1]) -1) * 25))
+                screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 245 - (int(key[1]) - 1) * 25))
 
-        # possible moves output
-        print(state.comb_threat_moves)
+        # opponent threats output
+        screen.blit(textures['mini_board'], (0, 285))
+        text = mini_font.render("opponent threats output", True, (255, 255, 255))
+        screen.blit(text, (0, 280))
         for key in state.comb_threat_moves:
             if state.comb_threat_moves[key] != '  ':
-                screen.blit(textures['dot'], (0 + (int(key[0]) - 1) * 25, 475 - (int(key[1]) - 1) * 25))
+                screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 475 - (int(key[1]) - 1) * 25))
 
+        # player cover output
+        screen.blit(textures['mini_board'], (0, 515))
+        text = mini_font.render("player cover output", True, (255, 255, 255))
+        screen.blit(text, (0, 510))
+        for key in state.comb_cover_moves:
+            if state.comb_cover_moves[key] != '  ':
+                screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 705 - (int(key[1]) - 1) * 25))
 
-    # if dop info(F3) pressed
-    if sett.f3:
+        # dop info
         fps = int(clock.get_fps())
-        font = pygame.font.Font(None, 50)
         messages = (
 
         f'Fps : {fps}',
@@ -564,7 +584,7 @@ while running:
 
         for num, message in enumerate(messages):
             text = font.render(message, True, (255, 255, 255))
-            screen.blit(text, (15, 5 + num * 35))
+            screen.blit(text, (15, 900 + num * 35))
 
     pygame.display.flip()
     clock.tick(60)
