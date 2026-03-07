@@ -1,5 +1,3 @@
-import random
-import copy
 import pygame
 import sys, os
 
@@ -68,7 +66,7 @@ class PlayerSettings:
         self.choose_mode = None
         self.choose_side = None
 
-    def f3_switch(self):
+    def f3_switch(self) -> None:
         self.f3 = not self.f3
 
 
@@ -83,30 +81,36 @@ class Input:
             x = 480; y = 1020 ; coef = 120
             self.buttons[place] = pygame.Rect(x + (int(place[0]) - 1) * coef, y - int(place[1]) * coef, coef, coef)
 
-    def make_move(self) -> None:
+
+    def start_move(self, mouse_pos) -> None:
         """
         If left button is pressed on the board, creates tuple with starting and ending positions.
         Changes:
              self.start_pos: square1 - if motion started
-             self.action: tuple[ square1 , square2 ] - if motion ended successfully, saving move data
         """
         # left button pressed
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            for button in self.buttons:
-                if self.buttons[button].collidepoint(mouse_pos):
-                    self.start_pos = button
-                    break
+        for button in self.buttons:
+            if self.buttons[button].collidepoint(mouse_pos):
+                self.start_pos = button
+                break
 
+
+    def finish_move(self, mouse_pos) -> None:
+        """
+        If left button is pressed on the board, creates tuple with starting and ending positions.
+        Changes:
+            self.action: tuple[ square1 , square2 ] - if motion ended successfully, saving move data
+            self.start_pos: empty
+        """
         # left button let go
-        if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.start_pos:
-            for button in self.buttons:
-                if self.buttons[button].collidepoint(mouse_pos):
-                    end_pos = button
-                    self.action = (self.start_pos, end_pos)
-                    break
+        for button in self.buttons:
+            if self.buttons[button].collidepoint(mouse_pos):
+                end_pos = button
+                self.action = (self.start_pos, end_pos)
+                break
 
-            # resets the button push after button let go
-            self.start_pos = ''
+        # resets the button push after button let go
+        self.start_pos = ''
 
 
 # Class Input
@@ -118,101 +122,114 @@ sett = PlayerSettings()
 # Class GameState
 state = GameState()
 
-""" MAIN CYCLE """
+def main():
+    """ Main """
 
-# starting the game
-state.start_game('w')
+    """ Starting Values """
 
+    # starting the game
+    state.start_game('w')
 
-running = True
-while running:
+    """ MAIN CYCLE """
 
-    """ BRAIN """
-    # makes a move , inp.action for input
-    if state.mode == "game":
-        if inp.action:
-            state.movement(*inp.action)
-            inp.action = ()
+    running = True
+    while running:
 
-    """ INPUT """
-
-    keys = pygame.key.get_pressed()
-    mouse_keys = pygame.mouse.get_pressed()
-    mouse_pos = pygame.mouse.get_pos()
-
-    for event in pygame.event.get():
-        # ways to exit
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            running = False
-
+        """ BRAIN """
+        # makes a move , inp.action for input
         if state.mode == "game":
+            if inp.action:
+                state.movement(*inp.action)
+                inp.action = ()
 
-            # pressing f3
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
-                sett.f3_switch()
+        """ INPUT """
 
-            # mouse left button press
-            inp.make_move()
+        keys = pygame.key.get_pressed()
+        mouse_keys = pygame.mouse.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+
+        for event in pygame.event.get():
+            # ways to exit
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                running = False
+
+            if state.mode == "game":
+
+                # pressing f3
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
+                    sett.f3_switch()
+
+                # mouse left button press
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    inp.start_move( mouse_pos )
+                # mouse left button let go
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and inp.start_pos:
+                    inp.finish_move( mouse_pos )
 
 
+        """ OUTPUT """
 
-    """ OUTPUT """
+        # background
+        screen.fill(background_color)
 
-    # background
-    screen.fill(background_color)
+        # if game is in process
+        if state.mode == "game":
+            # board
+            screen.blit(textures['board'], (480, 60))
 
-    # if game is in process
-    if state.mode == "game":
-        # board
-        screen.blit(textures['board'], (480, 60))
-
-        # pieces output
-        for key in state.board:
-            if state.board[key] != "  ":
-                screen.blit(textures['pieces'][state.board[key]], (480 + (int(key[0]) - 1) * 120, 905 - (int(key[1]) - 1) * 120))
+            # pieces output
+            for key in state.board:
+                if state.board[key] != "  ":
+                    screen.blit(textures['pieces'][state.board[key]], (480 + (int(key[0]) - 1) * 120, 905 - (int(key[1]) - 1) * 120))
 
 
-        # if F3 pressed
-        if sett.f3:
+            # if F3 pressed
+            if sett.f3:
 
-            # possible moves output
-            screen.blit(textures['mini_board'], ( 15, 60))
-            text = mini_font.render("possible moves output", True, (255, 255, 255))
-            screen.blit(text, (15, 40))
-            for key in state.comb_possible_moves:
-                if state.comb_possible_moves[key] != '  ':
-                    screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 245 - (int(key[1]) - 1) * 25))
+                # possible moves output
+                screen.blit(textures['mini_board'], ( 15, 60))
+                text = mini_font.render("possible moves output", True, (255, 255, 255))
+                screen.blit(text, (15, 40))
+                for key in state.comb_possible_moves:
+                    if state.comb_possible_moves[key] != '  ':
+                        screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 245 - (int(key[1]) - 1) * 25))
 
-            # opponent threats output
-            screen.blit(textures['mini_board'], (15, 290))
-            text = mini_font.render("opponent threats output", True, (255, 255, 255))
-            screen.blit(text, (15, 270))
-            for key in state.op_comb_cover_moves:
-                if state.op_comb_cover_moves[key] != '  ':
-                    screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 475 - (int(key[1]) - 1) * 25))
+                # opponent threats output
+                screen.blit(textures['mini_board'], (15, 290))
+                text = mini_font.render("opponent threats output", True, (255, 255, 255))
+                screen.blit(text, (15, 270))
+                for key in state.op_comb_cover_moves:
+                    if state.op_comb_cover_moves[key] != '  ':
+                        screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 475 - (int(key[1]) - 1) * 25))
 
-            # player cover output
-            screen.blit(textures['mini_board'], (15, 520))
-            text = mini_font.render("player cover output", True, (255, 255, 255))
-            screen.blit(text, (15, 500))
-            for key in state.comb_cover_moves:
-                if state.comb_cover_moves[key] != '  ':
-                    screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 705 - (int(key[1]) - 1) * 25))
+                # player cover output
+                screen.blit(textures['mini_board'], (15, 520))
+                text = mini_font.render("player cover output", True, (255, 255, 255))
+                screen.blit(text, (15, 500))
+                for key in state.comb_cover_moves:
+                    if state.comb_cover_moves[key] != '  ':
+                        screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 705 - (int(key[1]) - 1) * 25))
 
-            # dop info
-            fps = int(clock.get_fps())
-            messages = (
-                f'Fps : {fps}',
-                f'Check : {state.check}',
-                f'Mode : {state.mode}',
-                f'action : {inp.start_pos}, {inp.action}',
-                f'check : {state.check}')
-            for num, message in enumerate(messages):
-                text = font.render(message, True, (255, 255, 255))
-                screen.blit(text, (15, 900 + num * 35))
+                # dop info
+                fps = int(clock.get_fps())
+                messages = (
+                    f'Fps : {fps}',
+                    f'Check : {state.check}',
+                    f'Mode : {state.mode}',
+                    f'action : {inp.start_pos}, {inp.action}',
+                    f'check : {state.check}')
+                for num, message in enumerate(messages):
+                    text = font.render(message, True, (255, 255, 255))
+                    screen.blit(text, (15, 900 + num * 35))
 
-    pygame.display.flip()
-    clock.tick(60)
-pygame.quit()
+        pygame.display.flip()
+        clock.tick(60)
+    pygame.quit()
+
+
+""" Entry Point """
+
+if __name__ == '__main__':
+    main()

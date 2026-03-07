@@ -1,16 +1,5 @@
 import copy
 
-
-""" Constants """
-
-WHITE_PIECES = ('wq','wk','wr','wh','wb','wp')
-BLACK_PIECES = ('bq','bk','br','bh','bb','bp')
-WHITE_PIECES_NO_K = ('wq', 'wr', 'wh', 'wb', 'wp')
-BLACK_PIECES_NO_K = ('bq', 'br', 'bh', 'bb', 'bp')
-
-piece_worth = {'wp' : 1, 'wh' : 3,'wb' : 3, 'wr' : 5,'wq' : 9, 'wk' : 10,
-               'bp' : 1, 'bh' : 3,'bb' : 3, 'br' : 5,'bq' : 9, 'bk' : 10,'  ' : 0}
-
 """ Create Empties """
 
 def create_dict():
@@ -25,7 +14,20 @@ def create_dict():
         double_dict['dict' + square] = empty_dict
     return all_pos, empty_dict, double_dict
 
+
+""" Constants """
+
 ALL_POS, EMPTY_DICT, DOUBLE_DICT = create_dict()
+
+WHITE_PIECES = ('wq','wk','wr','wh','wb','wp')
+BLACK_PIECES = ('bq','bk','br','bh','bb','bp')
+WHITE_PIECES_NO_K = ('wq', 'wr', 'wh', 'wb', 'wp')
+BLACK_PIECES_NO_K = ('bq', 'br', 'bh', 'bb', 'bp')
+
+piece_worth = {'wp' : 1, 'wh' : 3,'wb' : 3, 'wr' : 5,'wq' : 9, 'wk' : 10,
+               'bp' : 1, 'bh' : 3,'bb' : 3, 'br' : 5,'bq' : 9, 'bk' : 10,'  ' : 0}
+
+
 
 """ Class GameState """
 
