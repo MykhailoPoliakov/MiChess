@@ -112,6 +112,12 @@ class Input:
         # resets the button push after button let go
         self.start_pos = ''
 
+class Bot:
+    pass
+
+
+
+bot = Bot()
 
 # Class Input
 inp = Input()
@@ -142,10 +148,11 @@ def main():
                 state.movement(*inp.action)
                 inp.action = ()
 
+        if state.player == 'b':
+            pass #inp.action = bot.move()
+
         """ INPUT """
 
-        keys = pygame.key.get_pressed()
-        mouse_keys = pygame.mouse.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
@@ -161,12 +168,14 @@ def main():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
                     sett.f3_switch()
 
-                # mouse left button press
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    inp.start_move( mouse_pos )
-                # mouse left button let go
-                if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and inp.start_pos:
-                    inp.finish_move( mouse_pos )
+                if state.player in ['w', 'b']:
+
+                    # mouse left button press
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        inp.start_move( mouse_pos )
+                    # mouse left button let go
+                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and inp.start_pos:
+                        inp.finish_move( mouse_pos )
 
 
         """ OUTPUT """
@@ -175,7 +184,7 @@ def main():
         screen.fill(background_color)
 
         # if game is in process
-        if state.mode == "game":
+        if True: #state.mode == "game":
             # board
             screen.blit(textures['board'], (480, 60))
 
@@ -190,7 +199,7 @@ def main():
 
                 # possible moves output
                 screen.blit(textures['mini_board'], ( 15, 60))
-                text = mini_font.render("possible moves output", True, (255, 255, 255))
+                text = mini_font.render("possible_moves", True, (255, 255, 255))
                 screen.blit(text, (15, 40))
                 for key in state.comb_possible_moves:
                     if state.comb_possible_moves[key] != '  ':
@@ -198,7 +207,7 @@ def main():
 
                 # opponent threats output
                 screen.blit(textures['mini_board'], (15, 290))
-                text = mini_font.render("opponent threats output", True, (255, 255, 255))
+                text = mini_font.render("op_comb_cover_moves", True, (255, 255, 255))
                 screen.blit(text, (15, 270))
                 for key in state.op_comb_cover_moves:
                     if state.op_comb_cover_moves[key] != '  ':
@@ -206,11 +215,22 @@ def main():
 
                 # player cover output
                 screen.blit(textures['mini_board'], (15, 520))
-                text = mini_font.render("player cover output", True, (255, 255, 255))
+                text = mini_font.render("comb_cover_moves", True, (255, 255, 255))
                 screen.blit(text, (15, 500))
                 for key in state.comb_cover_moves:
                     if state.comb_cover_moves[key] != '  ':
                         screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 705 - (int(key[1]) - 1) * 25))
+
+                # piece moves output
+                screen.blit(textures['mini_board'], (250, 60))
+                text = mini_font.render("king possible_moves", True, (255, 255, 255))
+                screen.blit(text, (250, 40))
+                for dict_key in state.possible_moves:
+                    if state.board[dict_key[-2:]] == 'wk':
+                        for key in state.possible_moves[dict_key]:
+                            if state.possible_moves[dict_key][key] != '  ':
+                                screen.blit(textures['dot'], (255 + (int(key[0]) - 1) * 25, 245 - (int(key[1]) - 1) * 25))
+                        break
 
                 # dop info
                 fps = int(clock.get_fps())
@@ -218,11 +238,15 @@ def main():
                     f'Fps : {fps}',
                     f'Check : {state.check}',
                     f'Mode : {state.mode}',
-                    f'action : {inp.start_pos}, {inp.action}',
-                    f'check : {state.check}')
+                    f'Action : {inp.start_pos}, {inp.action}',
+                    f'Check : {state.check}',
+                    f'Castle : {state.castle_switches}',
+                    f'El passant : {state.el_passant}',
+                    f'Captured w : {state.captured[ 'w' ]}, b : {state.captured[ 'b' ]}',
+                )
                 for num, message in enumerate(messages):
                     text = font.render(message, True, (255, 255, 255))
-                    screen.blit(text, (15, 900 + num * 35))
+                    screen.blit(text, (15, 800 + num * 35))
 
         pygame.display.flip()
         clock.tick(60)
