@@ -2,7 +2,7 @@ import pygame
 import sys, os
 
 # local imports
-from gamestate_class import GameState, create_dict
+from gamestate_class import GameState
 
 """ PyGame Initialization """
 
@@ -47,14 +47,7 @@ textures['mini_board'] = pygame.transform.scale(textures['board'], (200, 200))
 textures['mini_board'].set_alpha(90)
 
 
-""" Create empties """
-
-ALL_POS, EMPTY_DICT, DOUBLE_DICT = create_dict()
-
-""" Functions """
-
-pass
-
+""" Classes """
 
 
 class PlayerSettings:
@@ -72,12 +65,16 @@ class PlayerSettings:
 
 
 class Input:
+
+    # const
+    ALL_POS = tuple(f"{i}{j}" for i in range(1, 9) for j in range(8, 0, -1))
+
     def __init__(self) -> None:
         self.start_pos  = ''
         self.action = ()
         # board buttons
         self.buttons: dict = {}
-        for place in ALL_POS:
+        for place in self.ALL_POS:
             x = 480; y = 1020 ; coef = 120
             self.buttons[place] = pygame.Rect(x + (int(place[0]) - 1) * coef, y - int(place[1]) * coef, coef, coef)
 
@@ -112,12 +109,7 @@ class Input:
         # resets the button push after button let go
         self.start_pos = ''
 
-class Bot:
-    pass
 
-
-
-bot = Bot()
 
 # Class Input
 inp = Input()
@@ -136,6 +128,9 @@ def main():
     # starting the game
     state.start_game('w')
 
+    bot_delay = 100
+
+
     """ MAIN CYCLE """
 
     running = True
@@ -148,8 +143,12 @@ def main():
                 state.movement(*inp.action)
                 inp.action = ()
 
-        if state.player == 'b':
-            pass #inp.action = bot.move()
+        if state.player == 'n' and bot_delay:
+            bot_delay -= 1
+
+        if not bot_delay:
+            inp.action = state.bot_move()
+            bot_delay = 100
 
         """ INPUT """
 
@@ -168,7 +167,8 @@ def main():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
                     sett.f3_switch()
 
-                if state.player in ['w', 'b']:
+
+                if state.player == 'w' or state.player == 'b':
 
                     # mouse left button press
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -201,34 +201,34 @@ def main():
                 screen.blit(textures['mini_board'], ( 15, 60))
                 text = mini_font.render("possible_moves", True, (255, 255, 255))
                 screen.blit(text, (15, 40))
-                for key in state.comb_possible_moves:
-                    if state.comb_possible_moves[key] != '  ':
+                for key in state.moves['comb_legal']:
+                    if state.moves['comb_legal'][key] != '  ':
                         screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 245 - (int(key[1]) - 1) * 25))
 
                 # opponent threats output
                 screen.blit(textures['mini_board'], (15, 290))
                 text = mini_font.render("op_comb_cover_moves", True, (255, 255, 255))
                 screen.blit(text, (15, 270))
-                for key in state.op_comb_cover_moves:
-                    if state.op_comb_cover_moves[key] != '  ':
+                for key in state.moves['comb_op_cover']:
+                    if state.moves['comb_op_cover'][key] != '  ':
                         screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 475 - (int(key[1]) - 1) * 25))
 
                 # player cover output
                 screen.blit(textures['mini_board'], (15, 520))
                 text = mini_font.render("comb_cover_moves", True, (255, 255, 255))
                 screen.blit(text, (15, 500))
-                for key in state.comb_cover_moves:
-                    if state.comb_cover_moves[key] != '  ':
+                for key in state.moves['comb_cover']:
+                    if state.moves['comb_cover'][key] != '  ':
                         screen.blit(textures['dot'], (20 + (int(key[0]) - 1) * 25, 705 - (int(key[1]) - 1) * 25))
 
                 # piece moves output
                 screen.blit(textures['mini_board'], (250, 60))
                 text = mini_font.render("king possible_moves", True, (255, 255, 255))
                 screen.blit(text, (250, 40))
-                for dict_key in state.possible_moves:
+                for dict_key in state.moves['legal']:
                     if state.board[dict_key[-2:]] == 'wk':
-                        for key in state.possible_moves[dict_key]:
-                            if state.possible_moves[dict_key][key] != '  ':
+                        for key in state.moves['legal'][dict_key]:
+                            if state.moves['legal'][dict_key][key] != '  ':
                                 screen.blit(textures['dot'], (255 + (int(key[0]) - 1) * 25, 245 - (int(key[1]) - 1) * 25))
                         break
 
@@ -240,13 +240,14 @@ def main():
                     f'Mode : {state.mode}',
                     f'Action : {inp.start_pos}, {inp.action}',
                     f'Check : {state.check}',
-                    f'Castle : {state.castle_switches}',
-                    f'El passant : {state.el_passant}',
+                    f'Castle : {state.castle}',
+                    f'El passant : {state.en_passant}',
                     f'Captured w : {state.captured[ 'w' ]}, b : {state.captured[ 'b' ]}',
+                    f'Bot delay : {bot_delay}',
                 )
                 for num, message in enumerate(messages):
                     text = font.render(message, True, (255, 255, 255))
-                    screen.blit(text, (15, 800 + num * 35))
+                    screen.blit(text, (15, 750 + num * 35))
 
         pygame.display.flip()
         clock.tick(60)
