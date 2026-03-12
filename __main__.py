@@ -3,6 +3,8 @@ import sys, os
 
 # local imports
 from gamestate_class import GameState
+from input_class import Input
+from settings_class import Settings
 
 """ PyGame Initialization """
 
@@ -47,119 +49,69 @@ textures['mini_board'] = pygame.transform.scale(textures['board'], (200, 200))
 textures['mini_board'].set_alpha(90)
 
 
-""" Classes """
 
-
-class PlayerSettings:
-    def __init__(self):
-        self.f3 = True
-        self.sound = True
-
-        # placeholders
-        self.choose_mode = None
-        self.choose_side = None
-
-    def f3_switch(self) -> None:
-        self.f3 = not self.f3
-
-
-
-class Input:
-
-    # const
-    ALL_POS = tuple(f"{i}{j}" for i in range(1, 9) for j in range(8, 0, -1))
-
-    def __init__(self) -> None:
-        self.start_pos  = ''
-        self.action = ()
-        # board buttons
-        self.buttons: dict = {}
-        for place in self.ALL_POS:
-            x = 480; y = 1020 ; coef = 120
-            self.buttons[place] = pygame.Rect(x + (int(place[0]) - 1) * coef, y - int(place[1]) * coef, coef, coef)
-
-
-    def start_move(self, mouse_pos) -> None:
-        """
-        If left button is pressed on the board, creates tuple with starting and ending positions.
-        Changes:
-             self.start_pos: square1 - if motion started
-        """
-        # left button pressed
-        for button in self.buttons:
-            if self.buttons[button].collidepoint(mouse_pos):
-                self.start_pos = button
-                break
-
-
-    def finish_move(self, mouse_pos) -> None:
-        """
-        If left button is pressed on the board, creates tuple with starting and ending positions.
-        Changes:
-            self.action: tuple[ square1 , square2 ] - if motion ended successfully, saving move data
-            self.start_pos: empty
-        """
-        # left button let go
-        for button in self.buttons:
-            if self.buttons[button].collidepoint(mouse_pos):
-                end_pos = button
-                self.action = (self.start_pos, end_pos)
-                break
-
-        # resets the button push after button let go
-        self.start_pos = ''
-
-
-
-# Class Input
-inp = Input()
-
-# Class Settings
-sett = PlayerSettings()
-
-# Class GameState
-state = GameState()
 
 def main():
     """ Main """
 
-    """ Starting Values """
+    """ Classes """
 
-    # starting the game
-    state.start_game('w')
+    # Class Input
+    inp = Input()
+
+    # Class Settings
+    sett = Settings()
+
+    # Class GameState
+    state = GameState()
+
 
     bot_delay = 100
-
-
-    """ MAIN CYCLE """
 
     running = True
     while running:
 
         """ BRAIN """
+
+        if state.mode == "start":
+            if len(inp.start) == 2:
+
+                state.start_game( *inp.start )
+                inp.start = []
+
         # makes a move , inp.action for input
         if state.mode == "game":
-            if inp.action:
-                state.movement(*inp.action)
-                inp.action = ()
+            if len(inp.action) == 2:
 
-        if state.player == 'n' and bot_delay:
-            bot_delay -= 1
+                state.movement( *inp.action )
+                inp.action = []
 
-        if not bot_delay:
-            inp.action = state.bot_move()
-            bot_delay = 100
+
+            # BOT MAKES A MOVE
+            # delay
+            if state.player == state.init_opponent and state.bot and bot_delay:
+                bot_delay -= 1
+            # secure the move
+            if not bot_delay:
+                inp.action = state.bot_move()
+                bot_delay = 100
 
         """ INPUT """
 
         mouse_pos = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
+
             # ways to exit
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 running = False
+
+
+            if state.mode == "start":
+                inp.start_game()
+
 
             if state.mode == "game":
 
@@ -168,13 +120,13 @@ def main():
                     sett.f3_switch()
 
 
-                if state.player == 'w' or state.player == 'b':
-
+                # PLAYER MAKES A MOVE
+                if state.player == state.init_player or not state.bot:
                     # mouse left button press
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         inp.start_move( mouse_pos )
                     # mouse left button let go
-                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and inp.start_pos:
+                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and inp.action:
                         inp.finish_move( mouse_pos )
 
 
@@ -238,7 +190,7 @@ def main():
                     f'Fps : {fps}',
                     f'Check : {state.check}',
                     f'Mode : {state.mode}',
-                    f'Action : {inp.start_pos}, {inp.action}',
+                    f'Action : {inp.action}',
                     f'Check : {state.check}',
                     f'Castle : {state.castle}',
                     f'El passant : {state.en_passant}',

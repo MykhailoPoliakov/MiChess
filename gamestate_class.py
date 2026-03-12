@@ -3,23 +3,18 @@ import random
 
 # for testing
 def print_board(type_dict):
-    b_1_long = '       '  # colors
-    b_2_long = '       '
     b_1 = '  '
     b_2 = '  '
-    hor_line2 = f'   {(b_1_long + b_2_long) * 4}'
-    hor_line1 = f'   {(b_2_long + b_1_long) * 4}'
     print(
-            f' 8 {b_1}{type_dict["18"]}{b_1}{b_2}{type_dict["28"]}{b_2}{b_1}{type_dict["38"]}{b_1}{b_2}{type_dict["48"]}{b_2}{b_1}{type_dict["58"]}{b_1}{b_2}{type_dict["68"]}{b_2}{b_1}{type_dict["78"]}{b_1}{b_2}{type_dict["88"]}{b_2} 8\n{hor_line2}\n{hor_line1}\n'
-            f' 7 {b_2}{type_dict["17"]}{b_2}{b_1}{type_dict["27"]}{b_1}{b_2}{type_dict["37"]}{b_2}{b_1}{type_dict["47"]}{b_1}{b_2}{type_dict["57"]}{b_2}{b_1}{type_dict["67"]}{b_1}{b_2}{type_dict["77"]}{b_2}{b_1}{type_dict["87"]}{b_1} 7\n{hor_line1}\n{hor_line2}\n'
-            f' 6 {b_1}{type_dict["16"]}{b_1}{b_2}{type_dict["26"]}{b_2}{b_1}{type_dict["36"]}{b_1}{b_2}{type_dict["46"]}{b_2}{b_1}{type_dict["56"]}{b_1}{b_2}{type_dict["66"]}{b_2}{b_1}{type_dict["76"]}{b_1}{b_2}{type_dict["86"]}{b_2} 6\n{hor_line2}\n{hor_line1}\n'
-            f' 5 {b_2}{type_dict["15"]}{b_2}{b_1}{type_dict["25"]}{b_1}{b_2}{type_dict["35"]}{b_2}{b_1}{type_dict["45"]}{b_1}{b_2}{type_dict["55"]}{b_2}{b_1}{type_dict["65"]}{b_1}{b_2}{type_dict["75"]}{b_2}{b_1}{type_dict["85"]}{b_1} 5\n{hor_line1}\n{hor_line2}\n'
-            f' 4 {b_1}{type_dict["14"]}{b_1}{b_2}{type_dict["24"]}{b_2}{b_1}{type_dict["34"]}{b_1}{b_2}{type_dict["44"]}{b_2}{b_1}{type_dict["54"]}{b_1}{b_2}{type_dict["64"]}{b_2}{b_1}{type_dict["74"]}{b_1}{b_2}{type_dict["84"]}{b_2} 4\n{hor_line2}\n{hor_line1}\n'
-            f' 3 {b_2}{type_dict["13"]}{b_2}{b_1}{type_dict["23"]}{b_1}{b_2}{type_dict["33"]}{b_2}{b_1}{type_dict["43"]}{b_1}{b_2}{type_dict["53"]}{b_2}{b_1}{type_dict["63"]}{b_1}{b_2}{type_dict["73"]}{b_2}{b_1}{type_dict["83"]}{b_1} 3\n{hor_line1}\n{hor_line2}\n'
-            f' 2 {b_1}{type_dict["12"]}{b_1}{b_2}{type_dict["22"]}{b_2}{b_1}{type_dict["32"]}{b_1}{b_2}{type_dict["42"]}{b_2}{b_1}{type_dict["52"]}{b_1}{b_2}{type_dict["62"]}{b_2}{b_1}{type_dict["72"]}{b_1}{b_2}{type_dict["82"]}{b_2} 2\n{hor_line2}\n{hor_line1}\n'
-            f' 1 {b_2}{type_dict["11"]}{b_2}{b_1}{type_dict["21"]}{b_1}{b_2}{type_dict["31"]}{b_2}{b_1}{type_dict["41"]}{b_1}{b_2}{type_dict["51"]}{b_2}{b_1}{type_dict["61"]}{b_1}{b_2}{type_dict["71"]}{b_2}{b_1}{type_dict["81"]}{b_1} 1')
-
-
+        f' {b_1}{type_dict["18"]}{b_1}{b_2}{type_dict["28"]}{b_2}{b_1}{type_dict["38"]}{b_1}{b_2}{type_dict["48"]}{b_2}{b_1}{type_dict["58"]}{b_1}{b_2}{type_dict["68"]}{b_2}{b_1}{type_dict["78"]}{b_1}{b_2}{type_dict["88"]}{b_2}\n\n'
+        f' {b_2}{type_dict["17"]}{b_2}{b_1}{type_dict["27"]}{b_1}{b_2}{type_dict["37"]}{b_2}{b_1}{type_dict["47"]}{b_1}{b_2}{type_dict["57"]}{b_2}{b_1}{type_dict["67"]}{b_1}{b_2}{type_dict["77"]}{b_2}{b_1}{type_dict["87"]}{b_1}\n\n'
+        f' {b_1}{type_dict["16"]}{b_1}{b_2}{type_dict["26"]}{b_2}{b_1}{type_dict["36"]}{b_1}{b_2}{type_dict["46"]}{b_2}{b_1}{type_dict["56"]}{b_1}{b_2}{type_dict["66"]}{b_2}{b_1}{type_dict["76"]}{b_1}{b_2}{type_dict["86"]}{b_2}\n\n'
+        f' {b_2}{type_dict["15"]}{b_2}{b_1}{type_dict["25"]}{b_1}{b_2}{type_dict["35"]}{b_2}{b_1}{type_dict["45"]}{b_1}{b_2}{type_dict["55"]}{b_2}{b_1}{type_dict["65"]}{b_1}{b_2}{type_dict["75"]}{b_2}{b_1}{type_dict["85"]}{b_1}\n\n'
+        f' {b_1}{type_dict["14"]}{b_1}{b_2}{type_dict["24"]}{b_2}{b_1}{type_dict["34"]}{b_1}{b_2}{type_dict["44"]}{b_2}{b_1}{type_dict["54"]}{b_1}{b_2}{type_dict["64"]}{b_2}{b_1}{type_dict["74"]}{b_1}{b_2}{type_dict["84"]}{b_2}\n\n'
+        f' {b_2}{type_dict["13"]}{b_2}{b_1}{type_dict["23"]}{b_1}{b_2}{type_dict["33"]}{b_2}{b_1}{type_dict["43"]}{b_1}{b_2}{type_dict["53"]}{b_2}{b_1}{type_dict["63"]}{b_1}{b_2}{type_dict["73"]}{b_2}{b_1}{type_dict["83"]}{b_1}\n\n'
+        f' {b_1}{type_dict["12"]}{b_1}{b_2}{type_dict["22"]}{b_2}{b_1}{type_dict["32"]}{b_1}{b_2}{type_dict["42"]}{b_2}{b_1}{type_dict["52"]}{b_1}{b_2}{type_dict["62"]}{b_2}{b_1}{type_dict["72"]}{b_1}{b_2}{type_dict["82"]}{b_2}\n\n'
+        f' {b_2}{type_dict["11"]}{b_2}{b_1}{type_dict["21"]}{b_1}{b_2}{type_dict["31"]}{b_2}{b_1}{type_dict["41"]}{b_1}{b_2}{type_dict["51"]}{b_2}{b_1}{type_dict["61"]}{b_1}{b_2}{type_dict["71"]}{b_2}{b_1}{type_dict["81"]}{b_1}'
+    )
 
 
 class GameState:
@@ -33,8 +28,9 @@ class GameState:
         self.movement( start_pos: str , end_pos: str )
             makes a move
 
-        self.moves_checker()
+        self.bot_move()
             needed for the bot
+
     """
 
     PIECE_WORTH = {
@@ -52,6 +48,13 @@ class GameState:
 
         # settings
         self.mode: str = "start"
+
+        # init values
+        self.init_player: str = ''
+        self.init_opponent: str = ''
+
+        # bot mode
+        self.bot: bool = False
 
         # check
         self.check: bool = False
@@ -94,24 +97,29 @@ class GameState:
             '14': "  ", '24': "  ", '34': "  ", '44': "  ", '54': "  ", '64': "  ", '74': "  ", '84': "  ",
             '13': "  ", '23': "  ", '33': "  ", '43': "  ", '53': "  ", '63': "  ", '73': "  ", '83': "  ",
             '12': "wp", '22': "wp", '32': "wp", '42': "wp", '52': "wp", '62': "wp", '72': "wp", '82': "wp",
-            '11': "wr", '21': "wh", '31': "wb", '41': "wq", '51': "wk", '61': "wb", '71': "wh", '81': "wr",}
+            '11': "wr", '21': "wh", '31': "wb", '41': "wq", '51': "wk", '61': "wb", '71': "wh", '81': "wr",
+        }
 
 
 
 
-    def start_game(self, player: str) -> None:
+    def start_game(self, player: str, mode: str) -> None:
         """
         Starts the game.
         Args:
             player (str): Player`s side - 'w' or 'b'
         """
-        self.__player_change( player )
+        self.__player_change( 'w' )
         self.__dict_update( self.board )
         self.mode = "game"
+        self.bot = True if mode == "bot" else False
+        self.init_player = player
+        self.init_opponent = 'b' if player == 'w' else 'w'
 
 
 
-    def bot_move(self) -> tuple[ str ] :
+
+    def bot_move(self) -> list[ str ] :
         """
         text
 
@@ -151,7 +159,7 @@ class GameState:
                 end_dict = f'dict{end_pos}'
                 if self.moves['legal'][start_dict][end_pos] != 'x ':
                     continue
-
+                # check if move is legal
                 if not check_move():
                     continue
 
@@ -208,9 +216,10 @@ class GameState:
 
                         # if piece is protected by greater piece
                         pass
-                    """
+
                     # BASIC DEVELOPMENT
-                    
+
+                    """
                     # if you move under protection
                     if covers_check_np[ start_pos ] != 'x ' and covers_check_np[ end_pos ] == 'x ':
                         move_weight += 150
@@ -308,14 +317,20 @@ class GameState:
                     if last_move == end_pos + start_pos[-2:]:
                         move_weight = 5  # repeating the same move
                     last_move = start_pos[-2:] + end_pos
-                    """
-
+                """
 
                 # saving move value
                 bot_moves.append((start_pos, end_pos))
                 bot_weights.append(move_weight)
 
-        return random.choices( bot_moves , weights=bot_weights, k=1)[0]
+        # print moves and weights
+        moves = sorted(list(zip(bot_moves, bot_weights)) , key=lambda x: x[1] , reverse=True)
+        print(moves)
+
+        final_move =  random.choices( bot_moves , weights=bot_weights, k=1)[0]
+        print(final_move)
+
+        return list(final_move)
 
 
 
@@ -797,7 +812,7 @@ class GameState:
         self.moves['op_cover'], self.moves['comb_op_cover'] = self.moves_checker( board , cover=True, reverse=True)
 
         # updating dictionaries (possible moves)
-        self.moves['legal'], self.moves['comb_legal'] = self.moves_checker(board)
+        self.moves['legal'], self.moves['comb_legal'] = self.moves_checker( board )
 
         # updating dictionaries (possible moves)
-        self.moves['op_legal'], self.moves['comb_op_legal'] = self.moves_checker(board, reverse=True)
+        self.moves['op_legal'], self.moves['comb_op_legal'] = self.moves_checker( board , reverse=True)
