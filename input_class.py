@@ -1,27 +1,31 @@
 import pygame
 
 class Input:
+    """ Moving data from input to brain """
 
     # const
     ALL_POS = tuple(f"{i}{j}" for i in range(1, 9) for j in range(8, 0, -1))
 
     def __init__(self) -> None:
 
-        # moving data from input to brain
-
         # for making moves
         self.action: list = []
+
         # for setting starting values
         self.start: list = []
 
+        # f3 button switch
+        self.f3_switch = False
+
+
         # board buttons
-        self.buttons: dict = {}
-        for place in self.ALL_POS:
-            x = 480; y = 1020 ; coef = 120
-            self.buttons[place] = pygame.Rect(x + (int(place[0]) - 1) * coef, y - int(place[1]) * coef, coef, coef)
+        self.__board_buttons: dict = self.__create_buttons()
+
+
 
     def start_game(self) -> None:
         self.start = ['w', 'bot']
+
 
     def start_move(self, mouse_pos) -> None:
         """
@@ -31,9 +35,9 @@ class Input:
                 square1 - if motion started
         """
         # left button pressed
-        for button in self.buttons:
+        for button in self.__board_buttons:
             print( 1 )
-            if self.buttons[button].collidepoint(mouse_pos):
+            if self.__board_buttons[button].collidepoint(mouse_pos):
                 self.action = [button]
                 return
 
@@ -47,12 +51,18 @@ class Input:
                 []      - if motion ended unsuccessfully
         """
         # left button let go
-        for button in self.buttons:
-            if self.buttons[button].collidepoint(mouse_pos):
+        for button in self.__board_buttons:
+            if self.__board_buttons[button].collidepoint(mouse_pos):
                 self.action.append( button )
                 return
 
         # if no continuation was done, resetting self.action
         self.action = []
 
-        # resets the button push after button let go
+
+    def __create_buttons(self) -> dict:
+        board_buttons: dict = {}
+        for place in self.ALL_POS:
+            x = 480; y = 1020 ; coef = 120
+            board_buttons[place] = pygame.Rect(x + (int(place[0]) - 1) * coef, y - int(place[1]) * coef, coef, coef)
+        return board_buttons
