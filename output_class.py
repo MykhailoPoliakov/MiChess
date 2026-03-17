@@ -2,24 +2,44 @@ import pygame
 import sys, os
 
 class Output:
+    """
+            somthing
 
-    def __init__(self, screen, clock , background_color) -> None:
+            Args:
+                clock:
+                    pygame clock
+            """
 
+    def __init__(self, clock ) -> None:
         # pygame parts
-        self.screen = screen
-        self.clock = clock
+        self.screen: pygame.Surface = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN | pygame.SCALED)
+        self.background_color: tuple[int,int,int] = ( 0, 0, 0 )
+        self.clock: pygame.time.Clock = clock
 
         # fonts
         self.mini_font = pygame.font.Font(None, 25)
-        self.font = pygame.font.Font(None, 50)
+        self.font      = pygame.font.Font(None, 50)
 
         # textures
-        self.textures = self.init_textures()
+        self.textures: dict = self.init_textures()
 
-        # background
-        self.background_color = background_color
+    def print_background(self) -> None:
+        self.screen.fill( self.background_color )
+
+    """ Start mode """
+
+    def print_start_screen(self) -> None:
+        pygame.draw.rect(self.screen, (255, 255, 255), (660, 300, 600, 285) )
+        pygame.draw.rect(self.screen, (255, 255, 255), (660, 615, 600, 130) )
+
+        pygame.draw.rect(self.screen, (255, 0, 0), (850, 320, 100, 100) )
+        pygame.draw.rect(self.screen, (255, 0, 0), (970, 320, 100, 100) )
+
+        pygame.draw.rect(self.screen, (255, 0, 0), (850, 460, 100, 100) )
+        pygame.draw.rect(self.screen, (255, 0, 0), (970, 460, 100, 100) )
 
 
+    """ Game mode """
 
     def print_board(self, board, cords) -> None:
         x, y = cords
@@ -32,10 +52,6 @@ class Output:
             if board[key] != "  ":
                 self.screen.blit( self.textures['pieces'][board[key]],
                                 ( x + (int(key[0]) - 1) * 120, (y + 845) - (int(key[1]) - 1) * 120))
-
-
-    def print_background(self) -> None:
-        self.screen.fill( self.background_color )
 
 
     def print_message(self , messages, cords ) -> None:

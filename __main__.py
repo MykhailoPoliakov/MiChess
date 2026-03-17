@@ -14,7 +14,6 @@ def main():
     """ PyGame Initialization """
 
     pygame.init()
-    screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN | pygame.SCALED)
     clock = pygame.time.Clock()
 
 
@@ -30,12 +29,7 @@ def main():
     state = GameState()
 
     # Class Output
-    outp = Output( screen, clock, (0,0,0) )
-
-
-    """ Variables """
-
-    bot_delay = 100
+    outp = Output( clock )
 
 
     """ Main Loop """
@@ -63,45 +57,53 @@ def main():
                     state.movement( *inp.action )
                     inp.action = []
 
-                # switch extra info button
+                # switch "extra info" button
                 if inp.f3_switch:
                     sett.f3_switch()
                     inp.f3_switch = False
 
                 # bot decides the move
-                if state.player == state.init_opponent and state.bot and bot_delay:
-                    bot_delay -= 1
+                if state.player == state.init_opponent and state.bot and state.bot_delay:
+                    state.bot_delay -= 1
                 # if delay is over
-                if not bot_delay:
+                if not state.bot_delay:
                     inp.action = state.bot_move()
-                    bot_delay = 100
+                    state.bot_delay = 100
 
 
-            case "w won" | "b won":
-                pass
+            case "w_won" | "b_won":
+
+                # make restart
+                if inp.restart:
+                    state = GameState()
+                    inp.restart = False
 
 
         """ INPUT """
 
         mouse_pos = pygame.mouse.get_pos()
 
+
         for event in pygame.event.get():
 
             # ways to exit
             if event.type == pygame.QUIT:
                 running = False
+                break
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 running = False
+                break
 
             match state.mode:
 
-                case "start":
+                case "start" :
 
-                    # game initialization
-                    inp.start_game()
+                    # starting menu input
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        inp.start_game( mouse_pos )
 
 
-                case "game":
+                case "game" :
 
                     # pressing f3
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
@@ -117,8 +119,11 @@ def main():
                             inp.finish_move( mouse_pos )
 
 
-                case "w won" | "b won":
-                    pass
+                case "w_won" | "b_won" :
+
+                    # restarting menu
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        inp.restart = True
 
 
 
@@ -127,41 +132,55 @@ def main():
         # background
         outp.print_background()
 
-        # if game is in process
-        if True: #state.mode == "game":
+        match state.mode:
 
-            # print main board
-            outp.print_board( state.board, (480, 60) )
+            case "start" :
+
+                # print starting screen
+                outp.print_start_screen()
 
 
-            # if F3 pressed
-            if sett.f3:
+            case "game" :
 
-                # possible moves output
-                outp.print_comb_mini_board( "legal_moves", state.moves['comb_legal'], (15, 40))
+                # print main board
+                outp.print_board( state.board, (480, 60) )
 
-                # opponent threats output
-                outp.print_comb_mini_board("op_cover_moves", state.moves['comb_op_cover'], (15, 270))
 
-                # player cover output
-                outp.print_comb_mini_board("cover_moves", state.moves['comb_cover'], (15, 500))
+                # if F3 pressed
+                if sett.f3:
 
-                # piece moves output
-                outp.print_double_mini_board(
+                    # possible moves output
+                    outp.print_comb_mini_board( "legal_moves", state.moves['comb_legal'], (15, 40))
+
+                    # opponent threats output
+                    outp.print_comb_mini_board("op_cover_moves", state.moves['comb_op_cover'], (15, 270))
+
+                    # player cover output
+                    outp.print_comb_mini_board("cover_moves", state.moves['comb_cover'], (15, 500))
+
+                    # piece moves output
+                    outp.print_double_mini_board(
                     "king possible_moves", state.moves['legal'], state.board, 'wk', (250, 40))
 
-                # extra info
-                outp.print_message((
-                    f'Fps : {int(clock.get_fps())}',
-                    f'Check : {state.check}',
-                    f'Mode : {state.mode}',
-                    f'Action : {inp.action}',
-                    f'Check : {state.check}',
-                    f'Castle : {state.castle}',
-                    f'El passant : {state.en_passant}',
-                    f'Captured w : {state.captured[ 'w' ]}, b : {state.captured[ 'b' ]}',
-                    f'Bot delay : {bot_delay}'),
-                (15, 750))
+                    # extra info
+                    outp.print_message((
+                        f'Fps : {int(clock.get_fps())}',
+                        f'Check : {state.check}',
+                        f'Mode : {state.mode}',
+                        f'Action : {inp.action}',
+                        f'Check : {state.check}',
+                        f'Castle : {state.castle}',
+                        f'El passant : {state.en_passant}',
+                        f'Captured w : {state.captured[ 'w' ]}, b : {state.captured[ 'b' ]}',
+                        f'Bot delay : {state.bot_delay}'),
+                    (15, 750))
+
+
+            case "w_won" | "b_won" :
+
+                # print main board
+                outp.print_board(state.board, (480, 60))
+
 
         pygame.display.flip()
         clock.tick(60)

@@ -13,18 +13,56 @@ class Input:
 
         # for setting starting values
         self.start: list = []
+        self.start_values: list[str] = ['','']
 
         # f3 button switch
         self.f3_switch = False
 
+        # restart switch
+        self.restart = False
+
+        # start buttons
+        self.__start_buttons: dict = {
+            'white' : pygame.Rect(850, 320, 100, 100),
+            'black' : pygame.Rect(970, 320, 100, 100),
+            'solo'  : pygame.Rect(850, 460, 100, 100),
+            'bot'   : pygame.Rect(970, 460, 100, 100),
+            'start' : pygame.Rect(660, 615, 600, 130),
+        }
 
         # board buttons
-        self.__board_buttons: dict = self.__create_buttons()
+        self.__board_buttons: dict = self.__create_board_buttons()
 
 
+    def start_game(self, mouse_pos) -> None:
+        """
+        text
+        Changes:
+            self.start_values
 
-    def start_game(self) -> None:
-        self.start = ['w', 'bot']
+            self.start
+
+        """
+        if self.__start_buttons['white'].collidepoint(mouse_pos):
+            self.start_values[0] = 'w' if self.start_values[0] != 'w' else ''
+
+        elif self.__start_buttons['black'].collidepoint(mouse_pos):
+            self.start_values[0] = 'b' if self.start_values[0] != 'b' else ''
+
+        elif self.__start_buttons['solo'].collidepoint(mouse_pos):
+            self.start_values[1] = 'solo' if self.start_values[1] != 'solo' else ''
+
+        elif self.__start_buttons['bot'].collidepoint(mouse_pos):
+            self.start_values[1] = 'bot' if self.start_values[1] != 'bot' else ''
+
+        elif self.__start_buttons['start'].collidepoint(mouse_pos):
+            if self.start_values[0] and self.start_values[1]:
+
+                self.start = self.start_values
+                self.start_values = ['', '']
+                print(self.start)
+
+
 
 
     def start_move(self, mouse_pos) -> None:
@@ -60,7 +98,7 @@ class Input:
         self.action = []
 
 
-    def __create_buttons(self) -> dict:
+    def __create_board_buttons(self) -> dict:
         board_buttons: dict = {}
         for place in self.ALL_POS:
             x = 480; y = 1020 ; coef = 120

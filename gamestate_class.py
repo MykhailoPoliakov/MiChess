@@ -55,18 +55,19 @@ class GameState:
 
         # bot mode
         self.bot: bool = False
+        self.bot_delay: int = 100
 
         # check
         self.check: bool = False
 
         # en passant
-        self.en_passant: list[ int] = [0, 0]
+        self.en_passant: list[ int ] = [0, 0]
 
         # captured pieces
         self.captured: dict[ str, list ] = { 'w' : [] , 'b' : [] }
 
         # castle switches
-        self.castle: dict[ str, bool] = {'left_w': True, 'right_w': True, 'left_b': True, 'right_b': True}
+        self.castle: dict[ str, bool ] = {'left_w': True, 'right_w': True, 'left_b': True, 'right_b': True}
 
         # Player dependant variables
         self.player: str = '' # [ 'w' , 'b' ]
@@ -102,11 +103,11 @@ class GameState:
 
 
 
-
     def start_game(self, player: str, mode: str) -> None:
         """
         Starts the game.
         Args:
+            mode:
             player (str): Player`s side - 'w' or 'b'
         """
         self.__player_change( 'w' )
@@ -115,7 +116,6 @@ class GameState:
         self.bot = True if mode == "bot" else False
         self.init_player = player
         self.init_opponent = 'b' if player == 'w' else 'w'
-
 
 
 
@@ -144,10 +144,9 @@ class GameState:
 
 
 
-        bot_moves: list[ tuple ]   = []
+        bot_moves:   list[ tuple ] = []
         bot_weights: list[ float ] = []
 
-        move_weight: int = 5
 
         """ For every legal move """
 
@@ -164,6 +163,8 @@ class GameState:
                     continue
 
                 """ If under check """
+
+                move_weight: int = 5
 
                 if self.check:
 
@@ -189,18 +190,18 @@ class GameState:
 
                         # if moved to safe place
                         if self.moves['comb_op_cover'][ end_pos ] != 'x ':
-                            move_weight += 60
+                            move_weight += 100
 
                             # if you are attacked and not defended
                             if self.moves[ 'comb_cover' ][ start_pos ] != 'x ':
-                                move_weight += 500
+                                move_weight += 0
 
                         # if moved not to safe place
                         elif self.moves['comb_op_cover'][ end_pos ] == 'x ':
 
                             # if moved to protected place
                             if self.moves['comb_cover'][ end_pos ] == 'x ':
-                                move_weight += 15
+                                move_weight += 0
 
                     # IF POSSIBLE TO ATTACK
                     if self.board[ end_pos ][0] == self.opponent:
@@ -211,7 +212,7 @@ class GameState:
 
                         # take piece with higher value
                         elif self.moves['comb_op_cover'][end_pos] == 'x ' and \
-                        self.PIECE_WORTH[ self.board[start_pos ] ] >= self.PIECE_WORTH[ self.board[ end_pos ] ]:
+                        self.PIECE_WORTH[ self.board[start_pos ] ] <= self.PIECE_WORTH[ self.board[ end_pos ] ]:
                             move_weight += 10_000
 
                         # if piece is protected by greater piece
@@ -322,6 +323,8 @@ class GameState:
                 # saving move value
                 bot_moves.append((start_pos, end_pos))
                 bot_weights.append(move_weight)
+
+
 
         # print moves and weights
         moves = sorted(list(zip(bot_moves, bot_weights)) , key=lambda x: x[1] , reverse=True)
