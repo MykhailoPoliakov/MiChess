@@ -1,5 +1,4 @@
 import pygame
-import collections
 
 # local imports
 from gamestate_class import GameState

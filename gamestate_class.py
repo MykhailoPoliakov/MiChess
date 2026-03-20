@@ -72,22 +72,10 @@ class GameState:
         # Player dependant variables
         self.player: str = '' # [ 'w' , 'b' ]
         self.opponent: str = '' # [ 'w' , 'b' ]
-        self.pawn_direction: int = 0 # [ -1 , 1 ]
 
 
         # dictionaries for all pieces and their moves
-        self.moves: dict[ str, dict ] = {
-            # dictionary for every piece
-            'legal':  copy.deepcopy(self.DOUBLE_DICT),
-            'op_legal': copy.deepcopy(self.DOUBLE_DICT),
-            'cover': copy.deepcopy(self.DOUBLE_DICT),
-            'op_cover': copy.deepcopy(self.DOUBLE_DICT),
-            # combined dictionaries
-            'comb_legal': copy.deepcopy(self.EMPTY_DICT),
-            'comb_op_legal': copy.deepcopy(self.EMPTY_DICT),
-            'comb_cover': copy.deepcopy(self.EMPTY_DICT),
-            'comb_op_cover': copy.deepcopy(self.EMPTY_DICT),
-        }
+        self.moves: dict[ str, dict ] = {}
 
         # main board
         self.board: dict[str, str] = {  # main board
@@ -107,11 +95,11 @@ class GameState:
         """
         Starts the game.
         Args:
-            mode:
+            mode (str): 'bot' or 'solo'
             player (str): Player`s side - 'w' or 'b'
         """
         self.__player_change( 'w' )
-        self.__dict_update( self.board )
+        self.moves = self.moves_info(self.board)
         self.mode = "game"
         self.bot = True if mode == "bot" else False
         self.init_player = player
@@ -125,38 +113,46 @@ class GameState:
 
         """
 
-        def analyze_moves():
+        def analyze_moves( board: dict ) -> tuple:
+            """
+            Args:
+                board:
 
-            def check_move() -> bool:
+            Returns:
+
+            """
+            def check_move(ch_board, ch_moves, ch_start_pos, ch_end_pos) -> bool:
+
+                if ch_moves['legal'][f'dict{ch_start_pos}'][ ch_end_pos ] != 'x ':
+                    return False
 
                 # creating a test board to check if the move would not cause self check
-                test_board = copy.deepcopy(self.board)
-                test_board[end_pos] = test_board[start_pos]
-                test_board[start_pos] = '  '
-
-                # checking test board for possible moves
-                test_op_cover, test_comb_op_cover = self.moves_checker(test_board, True, True)
-
-                for place in test_board:  # check checker
+                test_board: dict = copy.deepcopy(ch_board)
+                test_board[ch_end_pos] = test_board[ch_start_pos]
+                test_board[ch_start_pos] = '  '
+                test_moves: dict = self.moves_info(test_board, player='op', mode='cover')
+                # check checker
+                for place in test_board:
                     if test_board[place] == self.player + 'k':
-                        if test_comb_op_cover[place] == 'x ':
+                        if test_moves['comb_op_cover'][place] == 'x ':
                             return False
                         return True
                 return True
 
+
+
             bot_moves: list[tuple] = []
             bot_weights: list[float] = []
 
-            for start_dict in self.moves['legal']:
+            moves = self.moves_info( board )
+
+            for start_dict in moves['legal']:
                 start_pos = start_dict[-2:]
-                if self.board[start_pos][0] != self.player:
+                if board[start_pos][0] != self.player:
                     continue
-                for end_pos in self.moves['legal'][start_dict]:
-                    end_dict = f'dict{end_pos}'
-                    if self.moves['legal'][start_dict][end_pos] != 'x ':
-                        continue
+                for end_pos in moves['legal'][start_dict]:
                     # check if move is legal
-                    if not check_move():
+                    if not check_move( board , moves, start_pos, end_pos ):
                         continue
 
                     """ If under check """
@@ -164,15 +160,36 @@ class GameState:
                     move_weight: int = 5
 
                     # if opponent piece can be taken
-                    if self.board[end_pos][0] == self.opponent:
-
+                    if board[end_pos][0] == self.opponent:
                         # if taking the piece is good
-                        if self.PIECE_WORTH[self.board[start_pos]] <= self.PIECE_WORTH[self.board[end_pos]] or \
-                                self.moves['comb_op_cover'][end_pos] != 'x ':
+                        if self.PIECE_WORTH[ board[start_pos]] <= self.PIECE_WORTH[ board[end_pos] ] or \
+                                moves['comb_op_cover'][end_pos] != 'x ':
                             move_weight += 10_000
 
-                    if move_weight < 5_000:
-                        pass
+
+
+                    board2: dict = copy.deepcopy( board )
+                    board2[end_pos] = board2[start_pos]
+                    board2[start_pos] = '  '
+                    moves2 = self.moves_info( board2 )
+
+                    for start_dict2 in moves2['legal']:
+                        start_pos2 = start_dict2[-2:]
+                        if board2[start_pos2][0] != self.player:
+                            continue
+                        for end_pos2 in moves2['legal'][start_dict]:
+                            # check if move is legal
+                            if not check_move( board2, moves2 , start_pos2, end_pos2 ):
+                                continue
+
+                            if board2[end_pos2][0] == self.opponent:
+                                # if taking the piece is good
+                                if self.PIECE_WORTH[board2[start_pos]] <= self.PIECE_WORTH[board2[end_pos2]] or \
+                                moves2['comb_op_cover'][end_pos2] != 'x ':
+                                    move_weight += 10_000
+
+
+
 
                     # saving move value
                     bot_moves.append((start_pos, end_pos))
@@ -184,13 +201,13 @@ class GameState:
 
 
 
-        f_bot_moves, f_bot_weights = analyze_moves( )
+        f_bot_moves, f_bot_weights = analyze_moves( self.board )
 
 
 
         # print moves and weights
-        moves = sorted(list(zip(f_bot_moves, f_bot_weights)) , key=lambda x: x[1] , reverse=True)
-        print(moves)
+        sorted_moves = sorted(list(zip(f_bot_moves, f_bot_weights)) , key=lambda x: x[1] , reverse=True)
+        print(sorted_moves)
 
         final_move =  random.choices( f_bot_moves , weights=f_bot_weights, k=1)[0]
         print(final_move)
@@ -199,13 +216,48 @@ class GameState:
 
 
 
+    def moves_info(self, board: dict, player='', mode='') -> dict:
+        """
+        Updates all the info boards.
+        Args:
+            board (dict): board, from which info is taken
+            player (str, optional): 'pl' for player, 'op' for opponent
+            mode (str, optional): 'cover' or 'legal'
+        Returns:
+            moves_dict (dict): all possible moves and cover calculated
+        """
 
-    def moves_checker(self, input_board, cover=False, reverse=False) -> tuple[ dict[ str, dict] , dict]:
+        moves_dict: dict = {}
+
+        if not player or player == 'pl':
+            # updating dictionaries (player cover moves)
+            moves_dict['cover'], moves_dict['comb_cover'] = self.__moves_checker_brain(board, moves_dict, cover=True)
+
+        if not player or player == 'op':
+            # updating dictionaries (opponent threat moves)
+            moves_dict['op_cover'], moves_dict['comb_op_cover'] = self.__moves_checker_brain(board, moves_dict, cover=True, reverse=True)
+
+        if (not player or player == 'pl') and (not mode or mode == 'legal'):
+            # updating dictionaries (possible moves)
+            moves_dict['legal'], moves_dict['comb_legal'] = self.__moves_checker_brain(board, moves_dict)
+
+        if (not player or player == 'op') and (not mode or mode == 'legal'):
+            # updating dictionaries (possible moves)
+            moves_dict['op_legal'], moves_dict['comb_op_legal'] = self.__moves_checker_brain(board, moves_dict, reverse=True)
+
+        return moves_dict
+
+
+
+
+    def __moves_checker_brain(self, input_board: dict, moves_dict: dict, cover=False, reverse=False) -> tuple:
         """
         Checks for all the possible player moves
         Args:
             input_board:
                 board, from which info is taken for analysis
+            moves_dict:
+                dict
             cover:
                 bool, if True shows all possible moves and attacks and protections
             reverse:
@@ -323,8 +375,8 @@ class GameState:
                 output_board[ rook position ]
             """
             if input_board[pos2] == '  ' and input_board[number] == '  ' and board_ext and \
-                    input_board[old_rook_pos] == self.player + 'r' and self.moves['comb_op_cover'][pos2] == '  ' and \
-                    self.moves['comb_op_cover'][number] == '  ' and threats_check_ext and self.moves['comb_op_cover'][place] == '  ':
+                    input_board[old_rook_pos] == self.player + 'r' and moves_dict['comb_op_cover'][pos2] == '  ' and \
+                    moves_dict['comb_op_cover'][number] == '  ' and threats_check_ext and moves_dict['comb_op_cover'][place] == '  ':
                 output_board['dict' + place][number] = 'x '
 
         def king_move_checker(number) -> None:
@@ -338,7 +390,7 @@ class GameState:
                     output_board['dict' + place][str(int(place) + number)] = 'x '
                     return
                 if input_board[str(int(place) + number)][0] != self.player and \
-                self.moves['comb_op_cover'][str(int(place) + number)] != 'x ':
+                moves_dict['comb_op_cover'][str(int(place) + number)] != 'x ':
                     output_board['dict' + place][str(int(place) + number)] = 'x '
 
 
@@ -401,23 +453,23 @@ class GameState:
 
                     # king
                     case 'k':
-                        if cover == False and reverse == False and input_board[ place ] == 'wk':
-                            print('wtf')
+
                         # king moves
                         for argument in ( 9, -9 , 11 , -11, 10, -10, 1, -1):
                             king_move_checker(argument)
 
                         # castle moves
-                        if place == '51' and self.castle['left_w']:
-                            castle_move_checker('31', '41', '11',
-                                                input_board['21'] == '  ', self.moves['comb_op_cover']['21'] == '  ')
-                        if place == '51' and self.castle['right_w']:
-                            castle_move_checker('71', '61', '81')
-                        if place == '58' and self.castle['left_b']:
-                            castle_move_checker('38', '48', '18',
-                                                input_board['28'] == '  ', self.moves['comb_op_cover']['28'] == '  ')
-                        if place == '58' and self.castle['right_b']:
-                            castle_move_checker('78', '68', '88')
+                        if not cover:
+                            if place == '51' and self.castle['left_w']:
+                                castle_move_checker('31', '41', '11',
+                                                    input_board['21'] == '  ', moves_dict['comb_op_cover']['21'] == '  ')
+                            if place == '51' and self.castle['right_w']:
+                                castle_move_checker('71', '61', '81')
+                            if place == '58' and self.castle['left_b']:
+                                castle_move_checker('38', '48', '18',
+                                                    input_board['28'] == '  ', moves_dict['comb_op_cover']['28'] == '  ')
+                            if place == '58' and self.castle['right_b']:
+                                castle_move_checker('78', '68', '88')
 
                     # queen
                     case 'q':
@@ -475,18 +527,15 @@ class GameState:
                 return False
 
             # creating a test board to check if the move would not cause self check
-            test_board = copy.deepcopy(self.board)
+            test_board: dict = copy.deepcopy(self.board)
             test_board[ end_pos ] = test_board[ start_pos ]
             test_board[ start_pos ] = '  '
-
-            # checking test board for possible moves
-            test_op_cover, test_comb_op_cover = self.moves_checker(test_board, True, True)
+            test_moves: dict = self.moves_info( test_board, player='op', mode='cover' )
 
             # check checker
             for place in test_board:
                 if test_board[ place ] == self.player + 'k':
-                    if test_comb_op_cover[ place ] == 'x ':
-                        print('why')
+                    if test_moves['comb_op_cover'][ place ] == 'x ':
                         return False
             return True
 
@@ -550,7 +599,7 @@ class GameState:
         self.__player_change()
 
         # updating dictionaries
-        self.__dict_update(self.board)
+        self.moves = self.moves_info(self.board)
 
         # check and draw check
         self.__check_check()
@@ -565,22 +614,18 @@ class GameState:
             side - 'w' for white, 'b' for black
                 if no arg was given, side changes to opposite
         Changes:
-            self.player and all related
+            self.player and self.opponent
         """
-        # changing side if no argument given
-        if not side:
-            self.player = 'b' if self.player == 'w' else 'w'
+
+        if side:
+            # changing side if no argument given
+            self.player = side
         else:
             # changing side to match the argument
-            self.player = side
+            self.player = 'b' if self.player == 'w' else 'w'
 
         # update all values to the current side
-        if self.player == 'w':
-            self.opponent = 'b'
-            self.pawn_direction = + 1
-        elif self.player == 'b':
-            self.opponent = 'w'
-            self.pawn_direction = - 1
+        self.opponent = 'b' if self.player == 'w' else 'w'
 
 
     def __check_check(self) -> None:
@@ -643,41 +688,16 @@ class GameState:
                 if self.moves['legal'][ move_dict ][ move_place ] == 'x ':
 
                     # create test deck and look for save move
-                    test_board = copy.deepcopy(self.board)
+                    test_board: dict = copy.deepcopy(self.board)
                     test_board[ move_place ] = self.board[move_dict[-2:]]
-                    op_cover_moves, op_comb_cover_moves = self.moves_checker( test_board , cover=True, reverse=True)
+                    test_board[ move_dict[-2:] ] = '  '
+
+                    test_moves: dict = self.moves_info(test_board, player='op', mode='cover')
 
                     # if save move found
-                    if op_comb_cover_moves[king_place] == '  ':  # if any move makes king safe, not a win
+                    if test_moves['comb_op_cover'][king_place] == '  ':  # if any move makes king safe, not a win
                         return
 
         # if there were no legal moves to save the king
         self.mode = f"{self.opponent}_won"
         print(f"{self.opponent} won")
-
-
-
-    def __dict_update(self, board: dict) -> None:
-        """
-        Updates all the info boards.
-        Args:
-            board (dict): board, from which info is taken
-        Changes:
-            rewrites these dictionaries:
-                self.possible_moves, self.comb_possible_moves
-                self.op_possible_moves, self.op_comb_possible_moves
-                self.cover_moves, self.comb_cover_moves
-                self.op_cover_moves, self.op_comb_cover_moves
-        """
-
-        # updating dictionaries (player cover moves)
-        self.moves['cover'], self.moves['comb_cover'] = self.moves_checker( board , cover=True)
-
-        # updating dictionaries (opponent threat moves)
-        self.moves['op_cover'], self.moves['comb_op_cover'] = self.moves_checker( board , cover=True, reverse=True)
-
-        # updating dictionaries (possible moves)
-        self.moves['legal'], self.moves['comb_legal'] = self.moves_checker( board )
-
-        # updating dictionaries (possible moves)
-        self.moves['op_legal'], self.moves['comb_op_legal'] = self.moves_checker( board , reverse=True)
