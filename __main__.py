@@ -119,7 +119,7 @@ def main():
                             inp.finish_move( mouse_pos )
 
 
-                case "w_won" | "b_won" :
+                case "w_won" | "b_won" | "draw":
 
                     # restarting menu
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -175,7 +175,7 @@ def main():
                     (15, 750))
 
 
-            case "w_won" | "b_won" :
+            case "w_won" | "b_won" | "draw":
 
                 # print main board
                 outp.print_board(state.main.board, (480, 60))

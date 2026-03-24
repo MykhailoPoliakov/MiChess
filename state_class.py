@@ -1,5 +1,4 @@
 import copy
-import random
 
 # local imports
 from game_class import Game
@@ -34,7 +33,7 @@ class GameState:
         self.EMPTY_DICT = {key: '  ' for key in self.ALL_POS}
         self.DOUBLE_DICT = {f'dict{key}': copy.deepcopy(self.EMPTY_DICT) for key in self.ALL_POS}
 
-        # settings
+        # game mode
         self.mode: str = "start"
 
         # init values
@@ -45,7 +44,7 @@ class GameState:
         self.bot: bool = False
         self.bot_delay: int = 100
 
-
+        # create game
         self.main = Game()
 
 
@@ -70,22 +69,22 @@ class GameState:
 
     def bot_move(self) -> list[ str ] :
         """
-        text
+        Given all game information returns final move.
 
+        Returns:
+            list[ str ] : final move
         """
-
-        def analyze_moves( game ) -> tuple:
+        def analyze_moves() -> tuple:
             """
-            Args:
-                game (Game): game object
-
             Returns:
-                ...
+                weighted tuple with potential moves
             """
 
             bot_moves: list[tuple] = []
             bot_weights: list[float] = []
 
+
+            game = Game( self.main )
             game.moves = self.moves_info( game )
 
             for start_dict in game.moves['legal']:
@@ -108,26 +107,73 @@ class GameState:
                                 game.moves['comb_op_cover'][end_pos] != 'x ':
                             move_weight += 10_000
 
+
+                    # 1 move ahead thinking
+
+                    game2 = Game( game )
+                    self.movement( game2, start_pos, end_pos )
+                    game2.moves = self.moves_info( game2 )
+
+                    move_weight2_list = []
+
+                    for start_dict2 in game2.moves['legal']:
+                        start_pos2 = start_dict2[-2:]
+                        if game2.board[start_pos2][0] != game2.player:
+                            continue
+                        for end_pos2 in game2.moves['legal'][start_dict2]:
+                            # check if move is legal
+                            if not self.check_move(game2, start_pos2, end_pos2):
+                                continue
+
+                            # 2 moves ahead thinking
+
+                            game3 = Game( game2 )
+                            self.movement(game3, start_pos2 , end_pos2 )
+                            game3.moves = self.moves_info( game3 )
+                            move_weight3_list = []
+
+                            for start_dict3 in game3.moves['legal']:
+                                start_pos3 = start_dict3[-2:]
+                                if game3.board[start_pos3][0] != game3.player:
+                                    continue
+                                for end_pos3 in game3.moves['legal'][start_dict3]:
+                                    # check if move is legal
+                                    if not self.check_move(game3, start_pos3, end_pos3):
+                                        continue
+
+                                    move_weight3 = 5
+
+                                    if game3.board[end_pos3][0] == game3.opponent:
+                                        # if taking the piece is good
+                                        if self.PIECE_WORTH[game3.board[start_pos3]] <= self.PIECE_WORTH[
+                                        game3.board[end_pos3]] or game3.moves['comb_op_cover'][end_pos3] != 'x ':
+                                            move_weight3 += 10_000
+
+                                    move_weight3_list.append( move_weight3 )
+
+                            final_weight3 = max(move_weight3_list)
+                            move_weight2_list.append( final_weight3 )
+
+                    final_weight2 = min(move_weight2_list)
+                    move_weight += final_weight2
+
+
                     # saving move value
                     bot_moves.append((start_pos, end_pos))
                     bot_weights.append(move_weight)
+                print( bot_moves, bot_weights )
 
             return bot_moves, bot_weights
 
 
 
 
-        bot_test = Game( self.main )
-        f_bot_moves, f_bot_weights = analyze_moves( bot_test )
-
-
+        # final move
+        sorted_moves = sorted(list(zip( *analyze_moves() )), key=lambda x: x[1], reverse=True)
+        final_move = sorted_moves[0][0]
 
         # print moves and weights
-        sorted_moves = sorted(list(zip(f_bot_moves, f_bot_weights)) , key=lambda x: x[1] , reverse=True)
-        print(sorted_moves)
-
-        final_move =  random.choices( f_bot_moves , weights=f_bot_weights, k=1)[0]
-        print(final_move)
+        print(f"{sorted_moves}\n{final_move}")
 
         return list(final_move)
 
@@ -552,11 +598,12 @@ class GameState:
             self.mode - 'draw' if draw on the board, sett.mode - 'stalemate' if stalemate
         """
         # Not enough material check
-        if ((list(game.board.values()).count('bb') <= 1 or list(game.board.values()).count('bh') <= 1) and
-            (list(game.board.values()).count('wb') <= 1 or list(game.board.values()).count('wh') <= 1) and
-        list(game.board.values()).count('br') == 0 and list(game.board.values()).count('bq') == 0 and
-        list(game.board.values()).count('bp') == 0 and list(game.board.values()).count('wr') == 0 and
-        list(game.board.values()).count('wq') == 0 and list(game.board.values()).count('wp') == 0):
+        pieces = list(game.board.values())
+        types = ['br','bq','bp','wr','wq','wp']
+
+        if  (pieces.count('bb') <= 1 or pieces.count('bh') <= 1) and \
+        (pieces.count('wb') <= 1 or pieces.count('wh') <= 1) and \
+        all( not pieces.count( typ ) for typ in types):
             self.mode = "draw"
 
         # Stalemate check
@@ -565,7 +612,7 @@ class GameState:
                 for value in game.moves['legal'][move].values():
                     if value == 'x ':
                         return
-            self.mode = "stalemate"
+            self.mode = "draw"
 
         if game.moves_amount > 50:
             self.mode = "draw"

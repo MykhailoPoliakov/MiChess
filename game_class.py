@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 class Game:
     def __init__(self, inherit=None) -> None:
 

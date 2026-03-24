@@ -74,7 +74,6 @@ class Input:
         """
         # left button pressed
         for button in self.__board_buttons:
-            print( 1 )
             if self.__board_buttons[button].collidepoint(mouse_pos):
                 self.action = [button]
                 return
