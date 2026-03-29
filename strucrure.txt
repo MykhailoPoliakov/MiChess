@@ -1,7 +1,7 @@
 __main__.py
-    ├── gamestate_class.py
-    │         ├── _
-    │         └── _
+    ├── state_class.py
+    │         ├── bot_class.py
+    │         └───────└─────── game_class.py
     ├── settings_class.py
     ├── input_class.py
     └── output_class.py

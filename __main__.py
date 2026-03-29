@@ -67,7 +67,7 @@ def main():
                     state.bot_delay -= 1
                 # if delay is over
                 if not state.bot_delay:
-                    inp.action = state.bot_move()
+                    inp.action = state.smart_bot.make_move()
                     state.bot_delay = 100
 
 
@@ -104,6 +104,11 @@ def main():
 
 
                 case "game" :
+
+                    # for testing
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_F5:
+                        state.smart_bot.analyze_moves_stack( state.main, 2 )
+
 
                     # pressing f3
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_F3:

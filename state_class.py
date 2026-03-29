@@ -2,6 +2,7 @@ import copy
 
 # local imports
 from game_class import Game
+from bot_class import Bot
 
 
 class GameState:
@@ -19,13 +20,6 @@ class GameState:
             needed for the bot
 
     """
-
-    PIECE_WORTH = {
-        'wp': 1, 'wh': 3, 'wb': 3, 'wr': 5, 'wq': 9, 'wk': 10,
-        'bp': 1, 'bh': 3, 'bb': 3, 'br': 5, 'bq': 9, 'bk': 10,
-        '  ': 0
-    }
-
     def __init__(self) -> None:
 
         # static empties
@@ -40,12 +34,15 @@ class GameState:
         self.init_player: str = ''
         self.init_opponent: str = ''
 
+        # create game
+        self.main = Game()
+
         # bot mode
         self.bot: bool = False
         self.bot_delay: int = 100
+        self.smart_bot = Bot( self, self.main )
 
-        # create game
-        self.main = Game()
+
 
 
 
@@ -65,117 +62,6 @@ class GameState:
         self.init_player = player
         self.init_opponent = 'b' if player == 'w' else 'w'
 
-
-
-    def bot_move(self) -> list[ str ] :
-        """
-        Given all game information returns final move.
-
-        Returns:
-            list[ str ] : final move
-        """
-        def analyze_moves() -> tuple:
-            """
-            Returns:
-                weighted tuple with potential moves
-            """
-
-            bot_moves: list[tuple] = []
-            bot_weights: list[float] = []
-
-
-            game = Game( self.main )
-            game.moves = self.moves_info( game )
-
-            for start_dict in game.moves['legal']:
-                start_pos = start_dict[-2:]
-                if game.board[start_pos][0] != game.player:
-                    continue
-                for end_pos in game.moves['legal'][start_dict]:
-                    # check if move is legal
-                    if not self.check_move( game, start_pos, end_pos ):
-                        continue
-
-                    """ If under check """
-
-                    move_weight: int = 5
-
-                    # if opponent piece can be taken
-                    if game.board[end_pos][0] == game.opponent:
-                        # if taking the piece is good
-                        if self.PIECE_WORTH[ game.board[start_pos]] <= self.PIECE_WORTH[ game.board[end_pos] ] or \
-                                game.moves['comb_op_cover'][end_pos] != 'x ':
-                            move_weight += 10_000
-
-
-                    # 1 move ahead thinking
-
-                    game2 = Game( game )
-                    self.movement( game2, start_pos, end_pos )
-                    game2.moves = self.moves_info( game2 )
-
-                    move_weight2_list = []
-
-                    for start_dict2 in game2.moves['legal']:
-                        start_pos2 = start_dict2[-2:]
-                        if game2.board[start_pos2][0] != game2.player:
-                            continue
-                        for end_pos2 in game2.moves['legal'][start_dict2]:
-                            # check if move is legal
-                            if not self.check_move(game2, start_pos2, end_pos2):
-                                continue
-
-                            # 2 moves ahead thinking
-
-                            game3 = Game( game2 )
-                            self.movement(game3, start_pos2 , end_pos2 )
-                            game3.moves = self.moves_info( game3 )
-                            move_weight3_list = []
-
-                            for start_dict3 in game3.moves['legal']:
-                                start_pos3 = start_dict3[-2:]
-                                if game3.board[start_pos3][0] != game3.player:
-                                    continue
-                                for end_pos3 in game3.moves['legal'][start_dict3]:
-                                    # check if move is legal
-                                    if not self.check_move(game3, start_pos3, end_pos3):
-                                        continue
-
-                                    move_weight3 = 5
-
-                                    if game3.board[end_pos3][0] == game3.opponent:
-                                        # if taking the piece is good
-                                        if self.PIECE_WORTH[game3.board[start_pos3]] <= self.PIECE_WORTH[
-                                        game3.board[end_pos3]] or game3.moves['comb_op_cover'][end_pos3] != 'x ':
-                                            move_weight3 += 10_000
-
-                                    move_weight3_list.append( move_weight3 )
-
-                            final_weight3 = max(move_weight3_list)
-                            move_weight2_list.append( final_weight3 )
-
-                    final_weight2 = min(move_weight2_list)
-                    move_weight += final_weight2
-
-
-                    # saving move value
-                    bot_moves.append((start_pos, end_pos))
-                    bot_weights.append(move_weight)
-                print( bot_moves, bot_weights )
-
-            return bot_moves, bot_weights
-
-
-
-
-        # final move
-        sorted_moves = sorted(list(zip( *analyze_moves() )), key=lambda x: x[1], reverse=True)
-        final_move = sorted_moves[0][0]
-
-        # print moves and weights
-        print(f"{sorted_moves}\n{final_move}")
-
-        return list(final_move)
 
 
 
@@ -662,7 +548,7 @@ class GameState:
             return False
 
         # creating a test board to check if the move would not cause self check
-        test = Game( self.main )
+        test = Game( game )
         test.board[end_pos] = test.board[start_pos]
         test.board[start_pos] = '  '
         test.moves = self.moves_info( test, player='op', mode='cover')
@@ -671,5 +557,6 @@ class GameState:
         for place in test.board:
             if test.board[place] == game.player + 'k':
                 if test.moves['comb_op_cover'][place] == 'x ':
+                    print("does not pass the test check")
                     return False
         return True
