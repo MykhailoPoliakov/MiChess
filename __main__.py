@@ -39,7 +39,7 @@ def main():
 
         """ BRAIN """
 
-        match state.mode:
+        match state.main.mode:
 
             case "start":
 
@@ -71,7 +71,7 @@ def main():
                     state.bot_delay = 100
 
 
-            case "w_won" | "b_won":
+            case "w_won" | "b_won" | "draw":
 
                 # make restart
                 if inp.restart:
@@ -94,7 +94,7 @@ def main():
                 running = False
                 break
 
-            match state.mode:
+            match state.main.mode:
 
                 case "start" :
 
@@ -107,7 +107,12 @@ def main():
 
                     # for testing
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_F5:
-                        state.smart_bot.analyze_moves_stack( state.main, 2 )
+                        state.smart_bot.analyze_moves_stack( state.main, 3 )
+
+
+
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_F6:
+                        state.smart_bot.analyze_moves_recursion( state.main, 2 )
 
 
                     # pressing f3
@@ -137,7 +142,7 @@ def main():
         # background
         outp.print_background()
 
-        match state.mode:
+        match state.main.mode:
 
             case "start" :
 
@@ -171,7 +176,7 @@ def main():
                     outp.print_message((
                         f'Fps : {int(clock.get_fps())}',
                         f'Check : {state.main.check}',
-                        f'Mode : {state.mode}',
+                        f'Mode : {state.main.mode}',
                         f'Action : {inp.action}',
                         f'Castle : {state.main.castle}',
                         f'El passant : {state.main.en_passant}',

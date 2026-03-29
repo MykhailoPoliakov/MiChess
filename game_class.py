@@ -1,6 +1,8 @@
 class Game:
     def __init__(self, inherit=None) -> None:
 
+        self.mode = inherit.mode if inherit else "start"
+
         # moves amount
         self.moves_amount: int = inherit.moves_amount if inherit else 0
 

@@ -27,9 +27,6 @@ class GameState:
         self.EMPTY_DICT = {key: '  ' for key in self.ALL_POS}
         self.DOUBLE_DICT = {f'dict{key}': copy.deepcopy(self.EMPTY_DICT) for key in self.ALL_POS}
 
-        # game mode
-        self.mode: str = "start"
-
         # init values
         self.init_player: str = ''
         self.init_opponent: str = ''
@@ -57,7 +54,7 @@ class GameState:
         """
         self.__player_change( game , 'w' )
         game.moves = self.moves_info( game )
-        self.mode = "game"
+        game.mode = "game"
         self.bot = True if mode == "bot" else False
         self.init_player = player
         self.init_opponent = 'b' if player == 'w' else 'w'
@@ -468,7 +465,7 @@ class GameState:
         """
         Checks for a check.
         Changes:
-            self.check - True if there is check else False
+            game.check - True if there is check else False
         """
         game.check = False
         for place in game.board:  # check checker
@@ -477,11 +474,12 @@ class GameState:
                 return
 
 
-    def __draw_check(self, game: Game) -> None:
+    @staticmethod
+    def __draw_check(game: Game) -> None:
         """
-        Checks for a drow and a stalemate.
+        Modifies object of class Game, changes game.mode to draw if draw was on the board.
         Changes:
-            self.mode - 'draw' if draw on the board, sett.mode - 'stalemate' if stalemate
+            game.mode - 'draw' if draw on the board, sett.mode - 'stalemate' if stalemate
         """
         # Not enough material check
         pieces = list(game.board.values())
@@ -490,7 +488,7 @@ class GameState:
         if  (pieces.count('bb') <= 1 or pieces.count('bh') <= 1) and \
         (pieces.count('wb') <= 1 or pieces.count('wh') <= 1) and \
         all( not pieces.count( typ ) for typ in types):
-            self.mode = "draw"
+            game.mode = "draw"
 
         # Stalemate check
         if not game.check:
@@ -498,17 +496,17 @@ class GameState:
                 for value in game.moves['legal'][move].values():
                     if value == 'x ':
                         return
-            self.mode = "draw"
+            game.mode = "draw"
 
         if game.moves_amount > 50:
-            self.mode = "draw"
+            game.mode = "draw"
 
 
     def __win_check(self, game: Game) -> None:
         """
         Checks for a win.
         Changes:
-            self.mode - 'w_won' or 'b_won' depending on who won
+            game.mode - 'w_won' or 'b_won' depending on who won
         """
         # if no check on king
         if not game.check:
@@ -527,7 +525,7 @@ class GameState:
                 if game.moves['legal'][ move_dict][ move_place] == 'x ':
 
                     # create test deck and look for save move
-                    test = Game( self.main )
+                    test = Game( game )
                     test.board[ move_place ] = game.board[move_dict[-2:]]
                     test.board[ move_dict[-2:] ] = '  '
                     test.moves = self.moves_info( test, player='op', mode='cover' )
@@ -537,7 +535,7 @@ class GameState:
                         return
 
         # if there were no legal moves to save the king
-        self.mode = f"{game.opponent}_won"
+        game.mode = f"{game.opponent}_won"
 
 
 

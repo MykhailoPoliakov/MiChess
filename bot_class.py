@@ -63,67 +63,11 @@ class Bot:
                 if not self.state.check_move(game, start_pos, end_pos):
                     continue
 
-                count_cycles[0] += 1
-
                 move_weight: float = 5
 
                 # 0 moves ahead thinking
 
                 move_weight += self.evaluate_game( game, start_pos, end_pos )
-
-                # 1 move ahead thinking
-
-                game1 = Game(game)
-                #self.state.movement(game1, start_pos, end_pos)
-                game1.board[ end_pos ] = game1.board[ start_pos ]
-                game1.board[ start_pos ] = '  '
-                game1.moves = self.state.moves_info( game1 )
-
-                weight_lvl1: float = float('inf')
-
-                for start_dict1 in game1.moves['legal']:
-                    start_pos1 = start_dict1[-2:]
-                    if game1.board[start_pos1][0] != game1.player:
-                        continue
-                    for end_pos1 in game1.moves['legal'][start_dict1]:
-                        # check if move is legal
-                        if not self.state.check_move(game1, start_pos1, end_pos1):
-                            continue
-
-                        count_cycles[1] += 1
-
-                        # 2 moves ahead thinking
-
-                        game2 = Game(game1)
-                        #self.state.movement(game2, start_pos1, end_pos1)
-                        game2.board[end_pos1] = game2.board[start_pos1]
-                        game2.board[start_pos1] = '  '
-                        game2.moves = self.state.moves_info( game2 )
-
-                        weight_lvl2: float = float('-inf')
-
-                        for start_dict2 in game2.moves['legal']:
-                            start_pos2 = start_dict2[-2:]
-                            if game2.board[start_pos2][0] != game2.player:
-                                continue
-                            for end_pos2 in game2.moves['legal'][start_dict2]:
-                                # check if move is legal
-                                if not self.state.check_move(game2, start_pos2, end_pos2):
-                                    continue
-
-                                count_cycles[2] += 1
-
-                                inside_weight = self.evaluate_game(game2, start_pos2, end_pos2)
-                                # best second player move
-                                if inside_weight > weight_lvl2:
-                                    weight_lvl2 = inside_weight
-
-                        # best opponent move
-                        if weight_lvl2 < weight_lvl1:
-                            weight_lvl1 = weight_lvl2
-
-                move_weight += ( weight_lvl1 / 2 )
-
 
                 # saving move value
                 bot_moves.append((start_pos, end_pos))
@@ -132,8 +76,6 @@ class Bot:
         print(count_cycles)
 
         return bot_moves, bot_weights
-
-
 
 
     def analyze_moves_stack(self, game_to_analyze: Game, intended_depth: int) -> float:
@@ -204,26 +146,92 @@ class Bot:
         print(bot_moves)
 
 
+    def analyze_moves_recursion(self, game_to_analyze: Game, intended_depth: int) -> tuple:
+
+        game = Game( game_to_analyze )
+        game.moves = self.state.moves_info(game)
+
+        init_player = game.player
+
+        result: tuple = self.recursion( game, intended_depth, init_player , 0)
+
+
+        print(f"final result : {result}")
+        return result
+
+
+
+    def recursion(self, game: Game, intended_depth: int, init_player: str, depth: int) -> float | tuple:
+
+        # if intended depth was reached
+        if depth > intended_depth:
+            return 0
+
+        # if game is finished
+        if game.mode != "game":
+            # draw
+            if game.mode == "draw":
+                return 0
+            # win
+            elif game.mode == f"{init_player}_won":
+                return float("inf")
+            # lose
+            else:
+                return float("-inf")
+
+
+        """ Starting iteration """
+
+        moves = []
+
+        # for every move
+        for start_dict in game.moves['legal']:
+            start_pos = start_dict[-2:]
+            if game.board[start_pos][0] != game.player:
+                continue
+            for end_pos in game.moves['legal'][start_dict]:
+                # check if move is legal
+                if not self.state.check_move(game, start_pos, end_pos):
+                    continue
+
+                value: list = [( start_pos, end_pos ), 0]
+
+                if game.player == init_player:
+                    value[1] = self.evaluate_game( game, start_pos, end_pos )
+
+
+
+                # recursion
+                new_game = Game(game)
+                self.state.movement(new_game, start_pos, end_pos)
+                print(f"recursion , depth : {depth}, move : {(start_pos, end_pos)}, value : {value}")
+                value[1] += self.recursion( new_game, intended_depth, init_player, depth + 1)
+
+                moves.append( value )
+
+
+
+        # return list of moves with
+
+        if depth == 0:
+            print(moves)
+            return max(moves, key=lambda x: x[1])[0]
+
+        # best move for player
+        elif game.player == init_player:
+            return max(moves, key=lambda x: x[1])[1]
+
+        # best move for opponent
+        else:
+            return min(moves, key=lambda x: x[1])[1]
 
 
 
 
-
-
-
-
-
-
-
-
-        weight: float = 0
-
-
-        return weight
 
 
     def evaluate_game(self, game: Game, start_pos: str, end_pos: str) -> float:
-        weight: float = 0
+        weight: float = 5
 
         """ If under check """
 
