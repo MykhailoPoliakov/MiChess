@@ -1,3 +1,5 @@
+import copy
+
 class Game:
     def __init__(self, inherit=None) -> None:
 
@@ -21,7 +23,8 @@ class Game:
         self.opponent: str = inherit.opponent if inherit else '' # [ 'w' , 'b' ]
 
         # dictionaries for all pieces and their moves
-        self.moves: dict = {}
+        self.changed_keys: list[str] = []
+        self.moves: dict = copy.deepcopy(inherit.moves) if inherit else {}
 
         # main board
         self.board: dict[str, str] = inherit.board.copy() if inherit else {
@@ -36,4 +39,4 @@ class Game:
         }
 
         # captured pieces
-        self.captured: dict[str, list] = inherit.captured.copy() if inherit else {'w': [], 'b': []}
+        self.captured: dict[str, list] = copy.deepcopy(inherit.captured) if inherit else {'w': [], 'b': []}

@@ -36,7 +36,7 @@ class GameState:
 
         # bot mode
         self.bot: bool = False
-        self.bot_delay: int = 100
+        self.bot_delay: int = 30
         self.smart_bot = Bot( self, self.main )
 
 
@@ -53,7 +53,7 @@ class GameState:
             player (str): Player`s side - 'w' or 'b'
         """
         self.__player_change( game , 'w' )
-        game.moves = self.moves_info( game )
+        self.moves_info( game )
         game.mode = "game"
         self.bot = True if mode == "bot" else False
         self.init_player = player
@@ -62,7 +62,7 @@ class GameState:
 
 
 
-    def moves_info(self, game: Game, player='', mode='') -> dict:
+    def moves_info(self, game: Game, player='', mode=''):
         """
         Updates all the info boards.
         Args:
@@ -73,30 +73,26 @@ class GameState:
             moves_dict (dict): all possible moves and cover calculated
         """
 
-        moves_dict: dict = {}
-
         if not player or player == 'pl':
             # updating dictionaries (player cover moves)
-            moves_dict['cover'], moves_dict['comb_cover'] = self.__moves_checker_brain(game, moves_dict, cover=True)
+            game.moves['cover'], game.moves['comb_cover'] = self.__moves_checker_brain(game, game.moves, cover=True,optimize=True)
 
         if not player or player == 'op':
             # updating dictionaries (opponent threat moves)
-            moves_dict['op_cover'], moves_dict['comb_op_cover'] = self.__moves_checker_brain(game, moves_dict, cover=True, reverse=True)
+            game.moves['op_cover'], game.moves['comb_op_cover'] = self.__moves_checker_brain(game, game.moves, cover=True, reverse=True,optimize=True)
 
         if (not player or player == 'pl') and (not mode or mode == 'legal'):
             # updating dictionaries (possible moves)
-            moves_dict['legal'], moves_dict['comb_legal'] = self.__moves_checker_brain(game, moves_dict)
+            game.moves['legal'], game.moves['comb_legal'] = self.__moves_checker_brain(game, game.moves,optimize=True)
 
         if (not player or player == 'op') and (not mode or mode == 'legal'):
             # updating dictionaries (possible moves)
-            moves_dict['op_legal'], moves_dict['comb_op_legal'] = self.__moves_checker_brain(game, moves_dict, reverse=True)
-
-        return moves_dict
+            game.moves['op_legal'], game.moves['comb_op_legal'] = self.__moves_checker_brain(game, game.moves, reverse=True,optimize=True)
 
 
 
 
-    def __moves_checker_brain(self, game: Game, moves_dict: dict, cover=False, reverse=False) -> tuple:
+    def __moves_checker_brain(self, game: Game, moves_dict: dict, cover=False, reverse=False, optimize=False) -> tuple:
         """
         Checks for all the possible player moves
         Args:
@@ -108,6 +104,8 @@ class GameState:
                 bool, if True shows all possible moves and attacks and protections
             reverse:
                 bool, if True shows same info for opposite player
+            optimaze:
+                bool
 
         Returns:
             Double dictionary with all possible moves for every square and
@@ -250,7 +248,12 @@ class GameState:
             self.__player_change( game )
 
         # all possible moves calculation
-        for place in game.board.keys():
+
+        # optimizing
+        keys_to_calculate = game.changed_keys if optimize else game.board
+        game.changed_keys = []
+
+        for place in keys_to_calculate:
             if game.board[place][0] == game.player:
 
                 # resets every move
@@ -429,7 +432,7 @@ class GameState:
         self.__player_change( game )
 
         # updating dictionaries
-        game.moves = self.moves_info( game )
+        self.moves_info( game )
 
         # check, draw and win check
         self.__check_check( game )
@@ -474,6 +477,7 @@ class GameState:
                 return
 
 
+
     @staticmethod
     def __draw_check(game: Game) -> None:
         """
@@ -516,7 +520,7 @@ class GameState:
         king_place = next(place for place in game.board if game.board[ place ] == game.player + 'k')
 
         # if king have moves
-        if 'x ' in game.moves['legal']['dict' + king_place]:
+        if 'x ' in game.moves['legal']['dict' + king_place].values():
             return
 
         # for all legal moves
@@ -528,7 +532,7 @@ class GameState:
                     test = Game( game )
                     test.board[ move_place ] = game.board[move_dict[-2:]]
                     test.board[ move_dict[-2:] ] = '  '
-                    test.moves = self.moves_info( test, player='op', mode='cover' )
+                    self.moves_info( test, player='op', mode='cover' )
 
                     # if save move found
                     if test.moves['comb_op_cover'][king_place] == '  ':  # if any move makes king safe, not a win
@@ -549,7 +553,7 @@ class GameState:
         test = Game( game )
         test.board[end_pos] = test.board[start_pos]
         test.board[start_pos] = '  '
-        test.moves = self.moves_info( test, player='op', mode='cover')
+        self.moves_info( test, player='op', mode='cover')
 
         # check checker
         for place in test.board:

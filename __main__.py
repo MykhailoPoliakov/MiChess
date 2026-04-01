@@ -67,8 +67,8 @@ def main():
                     state.bot_delay -= 1
                 # if delay is over
                 if not state.bot_delay:
-                    inp.action = state.smart_bot.make_move()
-                    state.bot_delay = 100
+                    inp.action = state.smart_bot.calculate_move( state.main, 2 )
+                    state.bot_delay = 30
 
 
             case "w_won" | "b_won" | "draw":
@@ -105,16 +105,6 @@ def main():
 
                 case "game" :
 
-                    # for testing
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_F5:
-                        state.smart_bot.analyze_moves_stack( state.main, 3 )
-
-
-
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_F6:
-                        state.smart_bot.analyze_moves_recursion( state.main, 2 )
-
-
                     # pressing f3
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
                         inp.f3_switch = True
@@ -150,7 +140,7 @@ def main():
                 outp.print_start_screen()
 
 
-            case "game" :
+            case "game" | "w_won" | "b_won" | "draw":
 
                 # print main board
                 outp.print_board( state.main.board, (480, 60) )
@@ -160,17 +150,20 @@ def main():
                 if sett.f3:
 
                     # possible moves output
-                    outp.print_comb_mini_board( "legal_moves", state.main.moves['comb_legal'], (15, 40))
+                    outp.print_comb_mini_board( "legal", state.main.moves['comb_legal'], (15, 40))
 
-                    # opponent threats output
-                    outp.print_comb_mini_board("op_cover_moves", state.main.moves['comb_op_cover'], (15, 270))
+                    # opponent moves output
+                    outp.print_comb_mini_board("op_legal", state.main.moves['comb_op_legal'], (15, 270))
 
                     # player cover output
-                    outp.print_comb_mini_board("cover_moves", state.main.moves['comb_cover'], (15, 500))
+                    outp.print_comb_mini_board("cover", state.main.moves['comb_cover'], (15, 500))
+
+                    # opponent cover output
+                    outp.print_comb_mini_board("op_cover", state.main.moves['comb_op_cover'], (250, 40))
 
                     # piece moves output
                     outp.print_double_mini_board(
-                    "king possible_moves", state.main.moves['legal'], state.main.board, 'wk', (250, 40))
+                    "king possible_moves", state.main.moves['legal'], state.main.board, 'wk', (250, 270))
 
                     # extra info
                     outp.print_message((
@@ -184,11 +177,6 @@ def main():
                         f'Bot delay : {state.bot_delay}'),
                     (15, 750))
 
-
-            case "w_won" | "b_won" | "draw":
-
-                # print main board
-                outp.print_board(state.main.board, (480, 60))
 
 
         pygame.display.flip()
