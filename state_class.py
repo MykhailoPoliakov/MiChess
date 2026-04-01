@@ -62,38 +62,45 @@ class GameState:
 
 
 
-    def moves_info(self, game: Game, player='', mode='', optimaze=False) -> None:
+    def moves_info(self, game: Game, mode='') -> None:
         """
         Updates all the info boards.
         Args:
             game (Game): Game object.
-            player (str, optional): 'pl' for player, 'op' for opponent
             mode (str, optional): 'cover' or 'legal'
-            optimaze (bool, optional): text
         Returns:
             moves_dict (dict): all possible moves and cover calculated
         """
 
-        if not player or player == 'pl':
-            # updating dictionaries (player cover moves)
-            game.moves['cover'], game.moves['comb_cover'] = self.__moves_checker_brain(game, cover=True,optimize=optimaze)
+        # updating dictionaries (player cover moves)
+        game.moves['w_cover'], game.moves['w_comb_cover'] = self.__moves_checker_brain(game, cover=True)
+        w_cover = game.moves['w_cover'], game.moves['w_comb_cover']
 
-        if not player or player == 'op':
-            # updating dictionaries (opponent threat moves)
-            game.moves['op_cover'], game.moves['comb_op_cover'] = self.__moves_checker_brain(game, cover=True, reverse=True,optimize=optimaze)
+        # updating dictionaries (opponent threat moves)
+        game.moves['b_cover'], game.moves['b_comb_cover'] = self.__moves_checker_brain(game, cover=True, reverse=True)
+        b_cover = game.moves['b_cover'], game.moves['b_comb_cover']
 
-        if (not player or player == 'pl') and (not mode or mode == 'legal'):
+
+        game.moves['cover'], game.moves['comb_cover'] = w_cover if game.player == 'w' else b_cover
+        game.moves['op_cover'], game.moves['comb_op_cover'] = b_cover if game.player == 'w' else w_cover
+
+
+        if not mode or mode == 'legal':
+
             # updating dictionaries (possible moves)
-            game.moves['legal'], game.moves['comb_legal'] = self.__moves_checker_brain(game, optimize=optimaze)
+            game.moves['w_legal'], game.moves['w_comb_legal'] = self.__moves_checker_brain(game)
+            w_legal = game.moves['w_legal'], game.moves['w_comb_legal']
 
-        if (not player or player == 'op') and (not mode or mode == 'legal'):
             # updating dictionaries (possible moves)
-            game.moves['op_legal'], game.moves['comb_op_legal'] = self.__moves_checker_brain(game, reverse=True,optimize=optimaze)
+            game.moves['b_legal'], game.moves['b_comb_legal'] = self.__moves_checker_brain(game, reverse=True)
+            b_legal = game.moves['b_legal'], game.moves['b_comb_legal']
+
+            game.moves['legal'], game.moves['comb_legal'] = w_legal if game.player == 'w' else b_legal
+            game.moves['op_legal'], game.moves['comb_op_legal'] = b_legal if game.player == 'w' else w_legal
 
 
 
-
-    def __moves_checker_brain(self, game: Game, cover=False, reverse=False, optimize=False) -> tuple:
+    def __moves_checker_brain(self, game: Game, cover=False, reverse=False) -> tuple:
         """
         Checks for all the possible player moves
         Args:
@@ -134,28 +141,28 @@ class GameState:
             if str(int(place) + direction) in self.ALL_POS and str(int(place) + (direction * 2)) in self.ALL_POS and \
                     game.board[str(int(place) + direction)] == '  ' and (
             game.board[str(int(place) + direction * 2)]) == '  ' \
-                    and ((game.player == 'w' and place[1] == '2') or (game.player == 'b' and place[1] == '7')):
+                    and ((player == 'w' and place[1] == '2') or (player == 'b' and place[1] == '7')):
                 output_board['dict' + place][str(int(place) + (direction * 2))] = 'x '
 
             # ATTACK MOVES
             # capture left piece
             if str(int(place) + direction - 10) in self.ALL_POS and game.board[
-                str(int(place) + direction - 10)][0] == game.opponent:
+                str(int(place) + direction - 10)][0] == opponent:
                 output_board['dict' + place][str(int(place) + direction - 10)] = 'x '
             # capture right piece
             if str(int(place) + direction + 10) in self.ALL_POS and game.board[
-                str(int(place) + direction + 10)][0] == game.opponent:
+                str(int(place) + direction + 10)][0] == opponent:
                 output_board['dict' + place][str(int(place) + direction + 10)] = 'x '
 
             # EL PASSANT
             # el passant left
-            if str(int(place) + direction - 10) in self.ALL_POS and game.board[str(int(place) - 10)] == game.opponent + 'p':
-                if (game.player == 'w' and place[1] == '5') or (game.player == 'b' and place[1] == '4'):
+            if str(int(place) + direction - 10) in self.ALL_POS and game.board[str(int(place) - 10)] == opponent + 'p':
+                if (player == 'w' and place[1] == '5') or (player == 'b' and place[1] == '4'):
                     if int(place[0]) - 1 == game.en_passant[1]:
                         output_board['dict' + place][str(int(place) + direction - 10)] = 'x '
             # el passant right
-            if str(int(place) + direction + 10) in self.ALL_POS and game.board[str(int(place) + 10)] == game.opponent + 'p':
-                if (game.player == 'w' and place[1] == '5') or (game.player == 'b' and place[1] == '4'):
+            if str(int(place) + direction + 10) in self.ALL_POS and game.board[str(int(place) + 10)] == opponent + 'p':
+                if (player == 'w' and place[1] == '5') or (player == 'b' and place[1] == '4'):
                     if int(place[0]) + 1 == game.en_passant[1]:
                         output_board['dict' + place][str(int(place) + direction + 10)] = 'x '
 
@@ -166,7 +173,7 @@ class GameState:
                 output_board[ knight position ]
             """
             if str((int(place) + number)) in self.ALL_POS:
-                if game.board[str(int(place) + number)][0] != game.player:
+                if game.board[str(int(place) + number)][0] != player:
                     output_board['dict' + place][str(int(place) + number)] = 'x '
 
         def bishop_move_checker(number1, number2, switch) -> None:
@@ -180,14 +187,14 @@ class GameState:
             if 1 <= number1 <= 8 and 1 <= number2 <= 8 and switches[switch]:
                 if cover:
                     output_board['dict' + place][str(number1) + str(number2)] = 'x '
-                    if game.board[str(number1) + str(number2)] not in ['  ', f'{game.opponent}k']:
+                    if game.board[str(number1) + str(number2)] not in ['  ', f'{opponent}k']:
                         switches[switch] = False
                     return
-                if game.board[str(number1) + str(number2)][0] == game.player:
+                if game.board[str(number1) + str(number2)][0] == player:
                     switches[switch] = False
                 else:
                     output_board['dict' + place][str(number1) + str(number2)] = 'x '
-                    if game.board[str(number1) + str(number2)][0] == game.opponent:
+                    if game.board[str(number1) + str(number2)][0] == opponent:
                         switches[switch] = False
 
         def rook_move_checker(number1, number2, switch) -> None:
@@ -201,14 +208,14 @@ class GameState:
             if 1 <= number1 <= 8 and switches[switch]:
                 if cover:
                     output_board['dict' + place][str(int(place) + number2)] = 'x '
-                    if game.board[str(int(place) + number2)] not in ['  ', f'{game.opponent}k']:
+                    if game.board[str(int(place) + number2)] not in ['  ', f'{opponent}k']:
                         switches[switch] = False
                     return
-                if game.board[str(int(place) + number2)][0] == game.player:
+                if game.board[str(int(place) + number2)][0] == player:
                     switches[switch] = False
                 else:
                     output_board['dict' + place][str(int(place) + number2)] = 'x '
-                    if game.board[str(int(place) + number2)][0] == game.opponent:
+                    if game.board[str(int(place) + number2)][0] == opponent:
                         switches[switch] = False
 
         def castle_move_checker(number, pos2, old_rook_pos, board_ext=True, threats_check_ext=True) -> None:
@@ -218,7 +225,7 @@ class GameState:
                 output_board[ rook position ]
             """
             if game.board[pos2] == '  ' and game.board[number] == '  ' and board_ext and \
-                    game.board[old_rook_pos] == game.player + 'r' and game.moves['comb_op_cover'][pos2] == '  ' and \
+                    game.board[old_rook_pos] == player + 'r' and game.moves['comb_op_cover'][pos2] == '  ' and \
                     game.moves['comb_op_cover'][number] == '  ' and threats_check_ext and game.moves['comb_op_cover'][place] == '  ':
                 output_board['dict' + place][number] = 'x '
 
@@ -232,28 +239,22 @@ class GameState:
                 if cover:
                     output_board['dict' + place][str(int(place) + number)] = 'x '
                     return
-                if game.board[str(int(place) + number)][0] != game.player and \
+                if game.board[str(int(place) + number)][0] != player and \
                 game.moves['comb_op_cover'][str(int(place) + number)] != 'x ':
                     output_board['dict' + place][str(int(place) + number)] = 'x '
 
 
-
-        # cleaning the dictionary
-        output_board = copy.deepcopy(self.DOUBLE_DICT)
-        solo_output_board = copy.deepcopy(self.EMPTY_DICT)
-
         # change the player if reverse is True
-        if reverse:
-            self.__player_change( game )
+        player = 'b' if reverse else 'w'
+        opponent = 'w' if reverse else 'b'
 
         # all possible moves calculation
+        output_board = {}
+        for place in game.board:
 
-        # optimizing
-        keys_to_calculate = game.changed_keys if optimize else game.board
-        game.changed_keys = []
-
-        for place in keys_to_calculate:
-            if game.board[place][0] == game.player:
+            # clean slot
+            output_board['dict' + place] = copy.deepcopy(self.EMPTY_DICT)
+            if game.board[place][0] == player:
 
                 # resets every move
                 switches = {
@@ -335,11 +336,9 @@ class GameState:
                             inside_let += 10
                             inside_num += 1
 
-        # change back to main player
-        if reverse:
-            self.__player_change( game )
 
         # make solo dict with info from double dict
+        solo_output_board = copy.deepcopy(self.EMPTY_DICT)
         for main_key in output_board:
             for second_key in output_board[main_key]:
                 if output_board[main_key][second_key] != '  ':
@@ -386,15 +385,19 @@ class GameState:
                 case '51' , '31':
                     game.board[ '41' ] = game.player + 'r'
                     game.board[ '11' ] = '  '
+
                 case '51', '71':
                     game.board[ '61' ] = game.player + 'r'
                     game.board[ '81' ] = '  '
+
                 case '58', '38':
                     game.board[ '48' ] = game.player + 'r'
                     game.board[ '18' ] = '  '
+
                 case '58', '78':
                     game.board[ '68' ] = game.player + 'r'
                     game.board[ '88' ] = '  '
+
 
             # castle switches off when king moves
             game.castle[f'left_{game.player}'] = False
@@ -531,7 +534,7 @@ class GameState:
                     test = Game( game )
                     test.board[ move_place ] = game.board[move_dict[-2:]]
                     test.board[ move_dict[-2:] ] = '  '
-                    self.moves_info( test, player='op', mode='cover' )
+                    self.moves_info( test, mode='cover' )
 
                     # if save move found
                     if test.moves['comb_op_cover'][king_place] == '  ':  # if any move makes king safe, not a win
@@ -552,7 +555,7 @@ class GameState:
         test = Game( game )
         test.board[end_pos] = test.board[start_pos]
         test.board[start_pos] = '  '
-        self.moves_info( test, player='op', mode='cover')
+        self.moves_info( test, mode='cover')
 
         # check checker
         for place in test.board:

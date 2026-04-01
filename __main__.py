@@ -150,20 +150,20 @@ def main():
                 if sett.f3:
 
                     # possible moves output
-                    outp.print_comb_mini_board( "legal", state.main.moves['comb_legal'], (15, 40))
+                    outp.print_comb_mini_board( "w_legal", state.main.moves['w_comb_legal'], (15, 40))
 
                     # opponent moves output
-                    outp.print_comb_mini_board("op_legal", state.main.moves['comb_op_legal'], (15, 270))
+                    outp.print_comb_mini_board("b_legal", state.main.moves['b_comb_legal'], (250, 40))
 
                     # player cover output
-                    outp.print_comb_mini_board("cover", state.main.moves['comb_cover'], (15, 500))
+                    outp.print_comb_mini_board("w_cover", state.main.moves['w_comb_cover'], (15, 270))
 
                     # opponent cover output
-                    outp.print_comb_mini_board("op_cover", state.main.moves['comb_op_cover'], (250, 40))
+                    outp.print_comb_mini_board("b_cover", state.main.moves['b_comb_cover'], (250, 270))
 
                     # piece moves output
                     outp.print_double_mini_board(
-                    "king possible_moves", state.main.moves['legal'], state.main.board, 'wk', (250, 270))
+                    "king possible_moves", state.main.moves['w_legal'], state.main.board, 'wk', (15, 500))
 
                     # extra info
                     outp.print_message((

@@ -23,7 +23,6 @@ class Game:
         self.opponent: str = inherit.opponent if inherit else '' # [ 'w' , 'b' ]
 
         # dictionaries for all pieces and their moves
-        self.changed_keys: list[str] = []
         self.moves: dict = copy.deepcopy(inherit.moves) if inherit else {}
 
         # main board
