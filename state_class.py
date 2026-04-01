@@ -62,49 +62,48 @@ class GameState:
 
 
 
-    def moves_info(self, game: Game, player='', mode=''):
+    def moves_info(self, game: Game, player='', mode='', optimaze=False) -> None:
         """
         Updates all the info boards.
         Args:
             game (Game): Game object.
             player (str, optional): 'pl' for player, 'op' for opponent
             mode (str, optional): 'cover' or 'legal'
+            optimaze (bool, optional): text
         Returns:
             moves_dict (dict): all possible moves and cover calculated
         """
 
         if not player or player == 'pl':
             # updating dictionaries (player cover moves)
-            game.moves['cover'], game.moves['comb_cover'] = self.__moves_checker_brain(game, game.moves, cover=True,optimize=True)
+            game.moves['cover'], game.moves['comb_cover'] = self.__moves_checker_brain(game, cover=True,optimize=optimaze)
 
         if not player or player == 'op':
             # updating dictionaries (opponent threat moves)
-            game.moves['op_cover'], game.moves['comb_op_cover'] = self.__moves_checker_brain(game, game.moves, cover=True, reverse=True,optimize=True)
+            game.moves['op_cover'], game.moves['comb_op_cover'] = self.__moves_checker_brain(game, cover=True, reverse=True,optimize=optimaze)
 
         if (not player or player == 'pl') and (not mode or mode == 'legal'):
             # updating dictionaries (possible moves)
-            game.moves['legal'], game.moves['comb_legal'] = self.__moves_checker_brain(game, game.moves,optimize=True)
+            game.moves['legal'], game.moves['comb_legal'] = self.__moves_checker_brain(game, optimize=optimaze)
 
         if (not player or player == 'op') and (not mode or mode == 'legal'):
             # updating dictionaries (possible moves)
-            game.moves['op_legal'], game.moves['comb_op_legal'] = self.__moves_checker_brain(game, game.moves, reverse=True,optimize=True)
+            game.moves['op_legal'], game.moves['comb_op_legal'] = self.__moves_checker_brain(game, reverse=True,optimize=optimaze)
 
 
 
 
-    def __moves_checker_brain(self, game: Game, moves_dict: dict, cover=False, reverse=False, optimize=False) -> tuple:
+    def __moves_checker_brain(self, game: Game, cover=False, reverse=False, optimize=False) -> tuple:
         """
         Checks for all the possible player moves
         Args:
             game (Game):
                 Game object
-            moves_dict:
-                dict
             cover:
                 bool, if True shows all possible moves and attacks and protections
             reverse:
                 bool, if True shows same info for opposite player
-            optimaze:
+            optimize:
                 bool
 
         Returns:
@@ -219,8 +218,8 @@ class GameState:
                 output_board[ rook position ]
             """
             if game.board[pos2] == '  ' and game.board[number] == '  ' and board_ext and \
-                    game.board[old_rook_pos] == game.player + 'r' and moves_dict['comb_op_cover'][pos2] == '  ' and \
-                    moves_dict['comb_op_cover'][number] == '  ' and threats_check_ext and moves_dict['comb_op_cover'][place] == '  ':
+                    game.board[old_rook_pos] == game.player + 'r' and game.moves['comb_op_cover'][pos2] == '  ' and \
+                    game.moves['comb_op_cover'][number] == '  ' and threats_check_ext and game.moves['comb_op_cover'][place] == '  ':
                 output_board['dict' + place][number] = 'x '
 
         def king_move_checker(number) -> None:
@@ -234,7 +233,7 @@ class GameState:
                     output_board['dict' + place][str(int(place) + number)] = 'x '
                     return
                 if game.board[str(int(place) + number)][0] != game.player and \
-                moves_dict['comb_op_cover'][str(int(place) + number)] != 'x ':
+                game.moves['comb_op_cover'][str(int(place) + number)] != 'x ':
                     output_board['dict' + place][str(int(place) + number)] = 'x '
 
 
@@ -311,12 +310,12 @@ class GameState:
                         if not cover:
                             if place == '51' and game.castle['left_w']:
                                 castle_move_checker('31', '41', '11',
-                                                    game.board['21'] == '  ', moves_dict['comb_op_cover']['21'] == '  ')
+                                                    game.board['21'] == '  ', game.moves['comb_op_cover']['21'] == '  ')
                             if place == '51' and game.castle['right_w']:
                                 castle_move_checker('71', '61', '81')
                             if place == '58' and game.castle['left_b']:
                                 castle_move_checker('38', '48', '18',
-                                                    game.board['28'] == '  ', moves_dict['comb_op_cover']['28'] == '  ')
+                                                    game.board['28'] == '  ', game.moves['comb_op_cover']['28'] == '  ')
                             if place == '58' and game.castle['right_b']:
                                 castle_move_checker('78', '68', '88')
 
