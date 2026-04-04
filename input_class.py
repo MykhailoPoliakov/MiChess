@@ -3,9 +3,7 @@ import pygame
 class Input:
     """ Moving data from input to brain """
 
-    # const
-    ALL_POS = tuple(f"{i}{j}" for i in range(1, 9) for j in range(8, 0, -1))
-
+    ALL_POS = tuple((i, j) for i in range(8) for j in range(8))
     def __init__(self) -> None:
 
         # for making moves
@@ -99,7 +97,9 @@ class Input:
 
     def __create_board_buttons(self) -> dict:
         board_buttons: dict = {}
-        for place in self.ALL_POS:
-            x = 480; y = 1020 ; coef = 120
-            board_buttons[place] = pygame.Rect(x + (int(place[0]) - 1) * coef, y - int(place[1]) * coef, coef, coef)
+        x = 480; y = 60
+        coef = 120
+        for row in range(8):
+            for col in range(8):
+                board_buttons[(col,row)] = pygame.Rect(x + row*coef, y + col*coef, coef, coef)
         return board_buttons

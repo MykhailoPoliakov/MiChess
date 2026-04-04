@@ -9,7 +9,7 @@ class Output:
                 clock:
                     pygame clock
             """
-
+    ALL_POS = tuple((i, j) for i in range(8) for j in range(8))
     def __init__(self, clock ) -> None:
         # pygame parts
         self.screen: pygame.Surface = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN | pygame.SCALED)
@@ -48,10 +48,9 @@ class Output:
         self.screen.blit( self.textures['board'] , (x, y))
 
         # pieces output
-        for key in board:
-            if board[key] != "  ":
-                self.screen.blit( self.textures['pieces'][board[key]],
-                                ( x + (int(key[0]) - 1) * 120, (y + 845) - (int(key[1]) - 1) * 120))
+        for place in self.ALL_POS:
+            if board[ place ] != "  ":
+                self.screen.blit( self.textures['pieces'][board[place]],(x + place[1]*120, y + place[0]*120))
 
 
     def print_message(self , messages, cords ) -> None:
@@ -63,25 +62,26 @@ class Output:
 
     def print_comb_mini_board(self, name: str, comb_dict: dict, cords: tuple) -> None:
         x, y = cords
-        self.screen.blit( self.textures['mini_board'], (x, y + 20))
+
+        self.screen.blit( self.textures['mini_board'], (x , y ))
+
         text = self.mini_font.render( name , True, (255, 255, 255))
-        self.screen.blit(text, (x, y))
-        for key in comb_dict:
-            if comb_dict[key] != '  ':
-                self.screen.blit( self.textures['dot'], ((x + 5) + (int(key[0]) - 1) * 25, (y + 205) - (int(key[1]) - 1) * 25))
+        self.screen.blit(text, (x, y -20))
+        for place in self.ALL_POS:
+            if comb_dict[ place ] == 1:
+                self.screen.blit( self.textures['dot'], (x +7 + place[1]* 25, y  +7 + place[0]* 25))
 
 
     def print_double_mini_board(self, name: str, double_dict: dict, board: dict ,tracking_piece: str, cords: tuple) -> None:
         x, y = cords
-        self.screen.blit( self.textures['mini_board'], ( x , y + 20 ))
+        self.screen.blit( self.textures['mini_board'], ( x , y ))
         text = self.mini_font.render( name , True, (255, 255, 255))
-        self.screen.blit(text, ( x, y ))
-        for dict_key in double_dict:
-            if board[dict_key[-2:]] == tracking_piece:
-                for key in double_dict[dict_key]:
-                    if double_dict[dict_key][key] != '  ':
-                        self.screen.blit( self.textures['dot'],
-                                        ((x + 5) + (int(key[0]) - 1) * 25, (205 + y) - (int(key[1]) - 1) * 25))
+        self.screen.blit(text, ( x, y - 20 ))
+        for loc in self.ALL_POS:
+            if board[ loc ] == tracking_piece:
+                for place in self.ALL_POS:
+                    if double_dict[ loc ][place] == 1:
+                        self.screen.blit( self.textures['dot'], (x +7 + place[1]* 25, y +7 + place[0]* 25))
                 return
 
 

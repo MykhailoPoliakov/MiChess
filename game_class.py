@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 
 class Game:
     def __init__(self, inherit=None) -> None:
@@ -26,16 +27,16 @@ class Game:
         self.moves: dict = copy.deepcopy(inherit.moves) if inherit else {}
 
         # main board
-        self.board: dict[str, str] = inherit.board.copy() if inherit else {
-            '18': "br", '28': "bh", '38': "bb", '48': "bq", '58': "bk", '68': "bb", '78': "bh", '88': "br",
-            '17': "bp", '27': "bp", '37': "bp", '47': "bp", '57': "bp", '67': "bp", '77': "bp", '87': "bp",
-            '16': "  ", '26': "  ", '36': "  ", '46': "  ", '56': "  ", '66': "  ", '76': "  ", '86': "  ",
-            '15': "  ", '25': "  ", '35': "  ", '45': "  ", '55': "  ", '65': "  ", '75': "  ", '85': "  ",
-            '14': "  ", '24': "  ", '34': "  ", '44': "  ", '54': "  ", '64': "  ", '74': "  ", '84': "  ",
-            '13': "  ", '23': "  ", '33': "  ", '43': "  ", '53': "  ", '63': "  ", '73': "  ", '83': "  ",
-            '12': "wp", '22': "wp", '32': "wp", '42': "wp", '52': "wp", '62': "wp", '72': "wp", '82': "wp",
-            '11': "wr", '21': "wh", '31': "wb", '41': "wq", '51': "wk", '61': "wb", '71': "wh", '81': "wr",
-        }
+        self.board = inherit.board.copy() if inherit else np.array([
+            ["br", "bh", "bb", "bq", "bk", "bb", "bh", "br"],
+            ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+            ["wr", "wh", "wb", "wq", "wk", "wb", "wh", "wr"],
+        ])
 
         # captured pieces
         self.captured: dict[str, list] = copy.deepcopy(inherit.captured) if inherit else {'w': [], 'b': []}
