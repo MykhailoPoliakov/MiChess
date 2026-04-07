@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 # local imports
 from game_class import Game
@@ -25,7 +26,7 @@ class GameState:
     KNIGHT_MOVES = np.array([[1, -2], [-1, 2], [-1, -2], [1, 2], [2, -1], [-2, 1], [-2, -1], [2, 1]])
     KING_MOVES = np.array([[1,0], [-1,0], [0,-1], [0,1], [1,-1], [-1,1], [-1,-1], [1,1]])
 
-    DRAW_PIECES = ['br', 'bq', 'bp', 'wr', 'wq', 'wp']
+    DRAW_PIECES = ['br', 'bq', 'bp', 'wr', 'wq', 'wp'] 
 
     ALL_POS = tuple((i, j) for i in range(8) for j in range(8))
     R8 = range(8)
@@ -150,19 +151,14 @@ class GameState:
             if 0 <= place[1] + 1 <= 7 and game.board[place[0] - direction][place[1] + 1][0] == opponent:
                 output_board[place][place[0] - direction][place[1] + 1] = 1
 
-            # el passant
-            if (player, place[1]) in [('w', 3), ('b', 4)]:
-
-                print("el passant start")
-                print(place[1] - 1)
+            # en passant
+            if (player, place[0]) in [('w', 3), ('b', 4)]:
                 if 0 <= place[1] - 1 <= 7 and game.board[place[0]][place[1] - 1] == opponent + 'p' and \
                 place[1] - 1 == game.en_passant[1]:
-                    print("el passant done")
                     output_board[place][place[0] - direction][place[1] - 1] = 1
 
                 if 0 <= place[1] + 1 <= 7 and game.board[place[0]][place[1] + 1] == opponent + 'p' and \
                 place[1] + 1 == game.en_passant[1]:
-                    print("el passant done")
                     output_board[place][place[0] - direction][place[1] - 1] = 1
 
         def horse_move_checker() -> None:
@@ -210,7 +206,7 @@ class GameState:
 
             s = 7 if player == 'w' else 0
 
-            if place == game.board[(s, 4)]:
+            if place == (s, 4):
 
                 if game.castle[f'right_{player}'] and \
                 game.board[(s, 5)] == "  " and game.moves['comb_op_cover'][(s, 5)] == 0 and \
@@ -240,6 +236,7 @@ class GameState:
                         if game.board[(num1, num2)][0] != player and \
                         game.moves['comb_op_cover'][(num1, num2)] == 0:
                             output_board[place][(num1, num2)] = 1
+
 
 
         # change the player if reverse is True
@@ -463,7 +460,7 @@ class GameState:
                 if game.moves['legal'][ loc ][ place ] == 1:
 
                     # create test deck and look for save move
-                    test = Game( game )
+                    test = Game(game)
                     test.board[ place ] = game.board[ loc ]
                     test.board[ loc ] = '  '
                     self.moves_info( test, mode='cover' )
@@ -485,7 +482,7 @@ class GameState:
             return False
 
         # creating a test board to check if the move would not cause self check
-        test = Game( game )
+        test = Game(game)
         test.board[end_pos] = test.board[start_pos]
         test.board[start_pos] = '  '
         self.moves_info( test, mode='cover' )

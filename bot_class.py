@@ -1,5 +1,6 @@
 from game_class import Game
 import random
+import copy
 
 class Bot:
     """
@@ -81,8 +82,9 @@ class Bot:
 
 
                 # create new board
-                new_game = Game( game )
+                new_game = Game(game)
                 self.state.movement(new_game, start_pos, end_pos)
+
                 # if game is finished
                 if new_game.mode != "game":
                     # draw
