@@ -1,5 +1,3 @@
-
-
 #[derive(Clone)]
 pub struct Game {
 
@@ -12,7 +10,7 @@ pub struct Game {
     // info for stoping the game
     pub mode: char,
     pub moves_amount: i16,
-    pub captured: Vec<&'static str>,
+    pub captured: Vec<(char,char)>,
 
     // players
     pub player: char,
@@ -22,6 +20,9 @@ pub struct Game {
     pub w_cover: [[Vec<(i8,i8)>;8];8],
     pub b_cover: [[Vec<(i8,i8)>;8];8],
     pub legal:   [[Vec<(i8,i8)>;8];8],
+
+    // history
+    pub history: Vec<[[(char,char);8];8]>,
 
 }
 
@@ -56,6 +57,9 @@ impl Game {
             w_cover: std::array::from_fn(|_| std::array::from_fn(|_| Vec::new())),
             b_cover: std::array::from_fn(|_| std::array::from_fn(|_| Vec::new())),
             legal:   std::array::from_fn(|_| std::array::from_fn(|_| Vec::new())),
+            
+            // history
+            history: Vec::new(),
         }
     }
 

@@ -293,7 +293,7 @@ class GameState:
 
             # capture opponent`s pawn
             if game.board[ (start_pos[0], end_pos[1]) ] == game.opponent + 'p' and end_pos[1] == game.en_passant[1]:
-                game.captured[ game.opponent ].append( game.board[ (end_pos[0], start_pos[1]) ])
+                game.captured[ game.opponent ].append( game.board[ (start_pos[0], end_pos[1]) ])
                 game.board[ (start_pos[0],end_pos[1]) ] = '  '
 
             # allow el passant
