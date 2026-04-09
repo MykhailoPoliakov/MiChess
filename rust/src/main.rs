@@ -9,8 +9,6 @@ fn main() {
     interface.init();
     interface.play( (7,1),(5,0)); 
     interface.bot_play();
-    interface.bot_play();
-
 
     interface.cover_moves();
     interface.legal_moves();

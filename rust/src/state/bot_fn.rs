@@ -25,8 +25,9 @@ impl State {
                 let value: i32;
 
                 let mut new_game = game.clone();
+                println!("test move");
                 self.movement(&mut new_game, &start_pos, &end_pos, false);
-
+                
 
                 let result = self.analyze_game(&new_game, init_player);
                 if result.1 && 1 <= max_depth {
@@ -42,6 +43,7 @@ impl State {
         }
         
         // making a move for bot
+        println!(" bot moves : {moves:?}");
         let result = moves.iter().max_by_key(|x| x.1).unwrap().0;
         self.movement(game, &result.0, &result.1, true);
         println!(" bot move : {result:?}");
@@ -98,6 +100,31 @@ impl State {
         let mut value = 0;
         let mut next: bool = false;
 
+        // if game was stopped
+        match game.mode {
+            'd' => return (0, false),
+            'w' => if init_player == 'w' { return ( PINF, false); } else { return ( NINF, false); },
+            'b' => if init_player == 'b' { return ( PINF, false); } else { return ( NINF, false); },
+             _  => (), 
+        }
+        // possition evaluation
+        value += (self.player_worth( &game.board, init_player) - self.player_worth( &game.board, self.opponent(init_player))) * 1000;
+
+        // check
+        if game.check {
+            value += 100;
+            next = true
+        }
+
+        // attacking the king
+
+        // if possible to take
+
+        // if need to protect
+
+
+
+
         
 
 
@@ -130,7 +157,4 @@ impl State {
              _  => return 0,
         }
     }
-
-
-
 }

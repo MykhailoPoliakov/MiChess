@@ -33,6 +33,17 @@ impl State {
             histiry_bool: false,
         }
     }
+
+    pub fn opponent(&self, player: char) -> char {
+        match player {
+            'w' => return 'b',
+            _   => return 'w',
+        }
+    }
+
+    pub fn history_push(&self, game: &mut Game ) {
+        game.history.push( game.board.clone());
+    }
 }
 
 
@@ -54,7 +65,7 @@ impl Interface {
     }
 
     pub fn init(&mut self) {
-        self.state.info( &mut self.game, ' ');
+        self.state.info( &mut self.game);
         self.game.history.push(self.game.board.clone());
     }
 

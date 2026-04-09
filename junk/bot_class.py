@@ -1,6 +1,6 @@
-from game_class import Game
+from junk.game_class import Game
 import random
-import copy
+
 
 class Bot:
     """

@@ -74,6 +74,7 @@ class Input:
         for button in self.__board_buttons:
             if self.__board_buttons[button].collidepoint(mouse_pos):
                 self.action = [button]
+                print("move started")
                 return
 
 
@@ -89,6 +90,7 @@ class Input:
         for button in self.__board_buttons:
             if self.__board_buttons[button].collidepoint(mouse_pos):
                 self.action.append( button )
+                print("move finished")
                 return
 
         # if no continuation was done, resetting self.action

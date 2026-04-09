@@ -18,7 +18,6 @@ impl State {
         // saving for back_up
         let save_game = game.clone();
 
-
         // MAKING THE MOVE
 
         // en passant
@@ -81,10 +80,10 @@ impl State {
         // MOVE WAS MADE
 
         // change the player
-        self.player_change( game );
+        std::mem::swap(&mut game.player, &mut game.opponent);
 
         // update info
-        self.info( game , ' ');
+        self.info( game );
 
         // checks for checks
         self.check_check( game );
@@ -117,15 +116,16 @@ impl State {
         if game.legal[king_pos.0 as usize][king_pos.1 as usize] != [] {
             return;
         }
+        println!("win check activates info");
         for loc in ALL_POS {
             for place in &game.legal[loc.0 as usize][loc.1 as usize] {
 
                 let mut test_game = game.clone();
                 test_game.board[place.0 as usize][place.1 as usize] = test_game.board[loc.0 as usize][loc.1 as usize];
                 test_game.board[loc.0 as usize][loc.1 as usize] = (' ',' ');
-                self.info( &mut test_game , 'c');
+                self.info( &mut test_game );
 
-                if test_game.op_cover()[king_pos.0 as usize][king_pos.1 as usize] == [] {
+                if test_game.op_cover()[king_pos.0 as usize][king_pos.1 as usize].is_empty() {
                     return;
                 }
             }
@@ -146,7 +146,7 @@ impl State {
         if !game.check {
             for place in ALL_POS {
                 if game.board[place.0 as usize][place.1 as usize].0 == game.player &&
-                game.legal[place.0 as usize][place.1 as usize] != [] {
+                !game.legal[place.0 as usize][place.1 as usize].is_empty() {
                     return;
                 }
             }
@@ -177,8 +177,8 @@ impl State {
     fn check_check(&mut self, game: &mut Game) -> () {
         game.check = false;
         for place in ALL_POS {
-            if game.board[place.0 as usize][place.1 as usize] == (game.opponent,'k') {
-                if true {
+            if game.board[place.0 as usize][place.1 as usize] == (game.player,'k') {
+                if !game.op_cover()[place.0 as usize][place.1 as usize].is_empty() {
                     game.check = true
                 }
                 return
@@ -186,20 +186,12 @@ impl State {
         }
     }
 
-
-
-    fn player_change(&mut self, game: &mut Game) -> () {
-        // changes the player
-        std::mem::swap(&mut game.player, &mut game.opponent)
-    }
-
-    
-    
+        
 
     pub fn check_move_deep(&mut self, game: &mut Game ) -> bool {
         for place in ALL_POS {
             if game.board[place.0 as usize][place.1 as usize] == (game.player,'k') {
-                if game.op_cover()[place.0 as usize][place.1 as usize] != [] {
+                if !game.op_cover()[place.0 as usize][place.1 as usize].is_empty() {
                     println!("Does nor pass the deep check.");
                     return false;
                 }
