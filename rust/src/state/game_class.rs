@@ -45,7 +45,7 @@ impl Game {
             check: false,
 
             // info for stoping the game
-            mode: 's',
+            mode: 'g',
             moves_amount: 0,
             captured: Vec::new(),
 

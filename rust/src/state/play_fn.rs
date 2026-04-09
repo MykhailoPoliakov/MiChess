@@ -22,15 +22,19 @@ impl State {
         // MAKING THE MOVE
 
         // en passant
+        let en_passant_copy = game.en_passant;
+        game.en_passant = -1;
+
         if game.board[start_pos.0 as usize][start_pos.1 as usize].1 == 'p' {
             // execute en passant
-            if game.board[start_pos.0 as usize][end_pos.1 as usize] == (game.opponent,'p') && end_pos.1 == game.en_passant {
+            if game.board[start_pos.0 as usize][end_pos.1 as usize] == (game.opponent,'p') && end_pos.1 == en_passant_copy {
                 game.captured.push(game.board[start_pos.0 as usize][end_pos.1 as usize]);
                 game.board[start_pos.0 as usize][end_pos.1 as usize] = (' ',' ');
             }
             // create en passant possibility
             if (start_pos.0 - end_pos.0).abs() == 2 {
                 game.en_passant = start_pos.1;
+
             } 
         // castle for rook
         } else if game.board[start_pos.0 as usize][start_pos.1 as usize].1 == 'r' {
@@ -56,10 +60,23 @@ impl State {
                 game.castle[1] = [false,false];
             }
         }
-        game.captured.push(game.board[end_pos.0 as usize][end_pos.1 as usize]);
-        game.board[end_pos.0 as usize][end_pos.1 as usize] = game.board[start_pos.0 as usize][start_pos.1 as usize];
-        game.board[start_pos.0 as usize][start_pos.1 as usize] = (' ',' ');
 
+        // 50 move rule
+        if game.board[end_pos.0 as usize][end_pos.1 as usize] != (' ',' ') {
+            game.captured.push( game.board[end_pos.0 as usize][end_pos.1 as usize] );
+            game.moves_amount = 0;
+        } else {
+            game.moves_amount += 1;
+        }
+
+        // possible promotion or basic move
+        if game.board[start_pos.0 as usize][start_pos.1 as usize].1 == 'p' && [0,7].contains(&end_pos.0) {
+            game.board[end_pos.0 as usize  ][end_pos.1 as usize  ] = ( game.player ,'q');
+            game.board[start_pos.0 as usize][start_pos.1 as usize] = (' ',' ');
+        } else {
+            game.board[end_pos.0 as usize  ][end_pos.1 as usize  ] = game.board[start_pos.0 as usize][start_pos.1 as usize];
+            game.board[start_pos.0 as usize][start_pos.1 as usize] = (' ',' ');
+        }
 
         // MOVE WAS MADE
 
@@ -90,6 +107,7 @@ impl State {
     }
 
 
+
     fn win_check(&mut self, game: &mut Game) -> () {
         if !game.check {
             return;
@@ -114,6 +132,8 @@ impl State {
         }
         game.mode = game.opponent;
     }
+
+
 
     fn draw_check(&mut self, game: &mut Game) -> () {
         // 50 move rule
@@ -153,6 +173,7 @@ impl State {
     }
 
 
+
     fn check_check(&mut self, game: &mut Game) -> () {
         game.check = false;
         for place in ALL_POS {
@@ -166,11 +187,13 @@ impl State {
     }
 
 
+
     fn player_change(&mut self, game: &mut Game) -> () {
         // changes the player
         std::mem::swap(&mut game.player, &mut game.opponent)
     }
 
+    
     
 
     pub fn check_move_deep(&mut self, game: &mut Game ) -> bool {
@@ -186,6 +209,7 @@ impl State {
     }
 
 
+
     pub fn check_move(&mut self, game: &mut Game, start_pos: &(i8,i8), end_pos: &(i8,i8)) -> bool {
         // checks for not legal moves
         if game.board[start_pos.0 as usize][start_pos.1 as usize].0 != game.player {
@@ -196,5 +220,4 @@ impl State {
         }
         return true;
     }
-
 }

@@ -8,14 +8,14 @@ fn main() {
 
     interface.init();
     interface.play( (7,1),(5,0)); 
-    interface.play( (0,1),(2,0)); 
+    interface.bot_play();
+    interface.bot_play();
 
 
     interface.cover_moves();
     interface.legal_moves();
     interface.board();
     
-        
 }
 
 

@@ -18,10 +18,7 @@ pub const ALL_POS: [(i8, i8); 64] = [
 // STATE class
 
 pub struct State {
-    pub init_player: char,
-    pub init_opponent: char,
-    pub bot_switch: bool,   
-    pub main: Game,
+    pub histiry_bool: bool, 
 }
 
 // State functions
@@ -31,14 +28,9 @@ mod bot_fn;
 
 
 impl State {
-
-    pub fn new(player: char, bot : bool) -> Self {
-        
+    pub fn new() -> Self {
         State {
-            init_player: player,
-            init_opponent: if player == 'w' {'b'} else {'w'},
-            bot_switch: bot,
-            main: Game::new(),
+            histiry_bool: false,
         }
     }
 }
@@ -56,7 +48,7 @@ pub struct Interface {
 impl Interface {
     pub fn new() -> Self {
         Interface {
-            state: State::new('w', false),
+            state: State::new(),
             game: Game::new(),
         }
     }
@@ -71,7 +63,7 @@ impl Interface {
     }
 
     pub fn bot_play(&mut self) {
-        self.state.bot_play( 'w' );
+        self.state.bot_play(& mut self.game, 0 );
     }
 
     pub fn board(&self) -> [[(char,char);8];8] {
