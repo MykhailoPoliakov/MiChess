@@ -105,15 +105,21 @@ impl State {
                                 let num1 = place.0 + i*direction.0;
                                 let num2 = place.1 + i*direction.1;
                                 if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
-                                    p_cover[num1 as usize][num2 as usize].push( place );
-                                    if [(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
-                                        break
-                                    }
                                     if board[num1 as usize][num2 as usize].0 == player {
                                         break
                                         }
                                     legal[place.0 as usize][place.1 as usize].push((num1, num2));
                                     if board[num1 as usize][num2 as usize].0 == opponent {
+                                        break
+                                    }
+                                }
+                            }
+                            for i in 1..8 {
+                                let num1 = place.0 + i*direction.0;
+                                let num2 = place.1 + i*direction.1;
+                                if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
+                                    p_cover[num1 as usize][num2 as usize].push( place );
+                                    if ![(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
                                         break
                                     }
                                 }
@@ -126,15 +132,21 @@ impl State {
                                 let num1 = place.0 + i*direction.0;
                                 let num2 = place.1 + i*direction.1;
                                 if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
-                                    p_cover[num1 as usize][num2 as usize].push( place );
-                                    if [(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
-                                        break
-                                    }
                                     if board[num1 as usize][num2 as usize].0 == player {
                                         break
                                         }
                                     legal[place.0 as usize][place.1 as usize].push((num1, num2));
                                     if board[num1 as usize][num2 as usize].0 == opponent {
+                                        break
+                                    }
+                                }
+                            }
+                            for i in 1..8 {
+                                let num1 = place.0 + i*direction.0;
+                                let num2 = place.1 + i*direction.1;
+                                if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
+                                    p_cover[num1 as usize][num2 as usize].push( place );
+                                    if ![(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
                                         break
                                     }
                                 }
@@ -147,15 +159,21 @@ impl State {
                                 let num1 = place.0 + i*direction.0;
                                 let num2 = place.1 + i*direction.1;
                                 if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
-                                    p_cover[num1 as usize][num2 as usize].push( place );
-                                    if [(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
-                                        break
-                                    }
                                     if board[num1 as usize][num2 as usize].0 == player {
                                         break
                                         }
                                     legal[place.0 as usize][place.1 as usize].push((num1, num2));
                                     if board[num1 as usize][num2 as usize].0 == opponent {
+                                        break
+                                    }
+                                }
+                            }
+                            for i in 1..8 {
+                                let num1 = place.0 + i*direction.0;
+                                let num2 = place.1 + i*direction.1;
+                                if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
+                                    p_cover[num1 as usize][num2 as usize].push( place );
+                                    if ![(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
                                         break
                                     }
                                 }
@@ -199,7 +217,7 @@ impl State {
                 if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
                     p_cover[num1 as usize][num2 as usize].push( place );
                     if board[num1 as usize][num2 as usize].0 != player && op_cover[num1 as usize][num2 as usize].is_empty() {
-                        legal[num1 as usize][num2 as usize].push(place);
+                        legal[place.0 as usize][place.1 as usize].push((num1, num2));
                     }
                 };
                 // castle
@@ -211,13 +229,13 @@ impl State {
                             board[s][2] == (' ',' ') && op_cover[s][2].is_empty() &&
                             board[s][1] == (' ',' ') && op_cover[s][1].is_empty() &&
                             board[s][0] == (player,'r') {
-                                legal[s][2].push(place);
+                                legal[place.0 as usize][place.1 as usize].push((s as i8, 2));
                             }
                     } else if game.castle[if player == 'w' {0} else {1}][1] == true {
                         if board[s][5] == (' ',' ') && op_cover[s][5].is_empty() &&
                             board[s][6] == (' ',' ') && op_cover[s][6].is_empty() &&
                             board[s][7] == (player,'r') {
-                                legal[s][6].push(place);
+                                legal[place.0 as usize][place.1 as usize].push((s as i8, 5));
                             }
                         }
                     }

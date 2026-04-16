@@ -45,6 +45,17 @@ def main():
                 if len(inp.action) == 2:
                     mc.play(*inp.action)
                     inp.action = []
+                    print("legal")
+                    for i in mc.legal():
+                        print(i)
+                    print("cover w")
+                    for i in mc.cover('w'):
+                        print(i)
+                    print("cover b")
+                    for i in mc.cover('b'):
+                        print(i)
+                    print(mc.mode())
+
 
                 # switch "extra info" button
                 if inp.f3_switch:

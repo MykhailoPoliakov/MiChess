@@ -111,9 +111,10 @@ impl State {
         if !game.check {
             return;
         }
-        let king_pos = ALL_POS.iter().find(|&p| game.board[p.0 as usize][p.1 as usize] == (game.opponent, 'k')).unwrap();
 
-        if game.legal[king_pos.0 as usize][king_pos.1 as usize] != [] {
+        let king_pos = ALL_POS.iter().find(|&p| game.board[p.0 as usize][p.1 as usize] == (game.player, 'k')).unwrap();
+
+        if !game.legal[king_pos.0 as usize][king_pos.1 as usize].is_empty() {
             return;
         }
         println!("win check activates info");
@@ -189,14 +190,14 @@ impl State {
         
 
     pub fn check_move_deep(&mut self, game: &mut Game ) -> bool {
-        for place in ALL_POS {
-            if game.board[place.0 as usize][place.1 as usize] == (game.player,'k') {
-                if !game.op_cover()[place.0 as usize][place.1 as usize].is_empty() {
-                    println!("Does nor pass the deep check.");
-                    return false;
-                }
-            }
+
+        let king_pos = ALL_POS.iter().find(|&p| game.board[p.0 as usize][p.1 as usize] == (game.opponent, 'k')).unwrap();
+
+        if !game.pl_cover()[king_pos.0 as usize][king_pos.1 as usize].is_empty() {
+            println!("Does nor pass the deep check.");
+            return false;
         }
+
         return true;
     }
 
