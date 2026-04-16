@@ -42,18 +42,19 @@ class Input:
 
         """
         if self.__start_buttons['white'].collidepoint(mouse_pos):
-            self.start_values[0] = 'w' if self.start_values[0] != 'w' else ''
+            self.start_values[0] = 'w' 
 
         elif self.__start_buttons['black'].collidepoint(mouse_pos):
-            self.start_values[0] = 'b' if self.start_values[0] != 'b' else ''
+            self.start_values[0] = 'b' 
 
         elif self.__start_buttons['solo'].collidepoint(mouse_pos):
-            self.start_values[1] = 'solo' if self.start_values[1] != 'solo' else ''
+            self.start_values[1] = 'solo' 
 
         elif self.__start_buttons['bot'].collidepoint(mouse_pos):
-            self.start_values[1] = 'bot' if self.start_values[1] != 'bot' else ''
+            self.start_values[1] = 'bot' 
 
         elif self.__start_buttons['start'].collidepoint(mouse_pos):
+            print("start pressed")
             if self.start_values[0] and self.start_values[1]:
 
                 self.start = self.start_values

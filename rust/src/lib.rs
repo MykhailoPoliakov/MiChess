@@ -1,6 +1,5 @@
-mod state;
-pub use state::State;
-pub use state::Game;
+pub mod state;
+pub use state::{State, Game, info};
 
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
@@ -17,7 +16,7 @@ static INIT: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 // main functions
 
 #[pyfunction]
-fn init(board: Option<[[(char, char); 8]; 8]> ) -> PyResult<()> {
+fn init() -> PyResult<()> {
     let mut game = GAME.lock().unwrap();
     let mut state = STATE.lock().unwrap();
     let mut init = INIT.lock().unwrap();
@@ -25,11 +24,7 @@ fn init(board: Option<[[(char, char); 8]; 8]> ) -> PyResult<()> {
     *game = Game::new();  
     *state = State::new();
 
-    if let Some(custom_board) = board {
-        game.board = custom_board;
-    }
-
-    state.info( &mut game );
+    info( &mut game );
     
     if game.mode != 'g' { return Err(pyo3::exceptions::PyRuntimeError::new_err("Board is invalid.")); }
     *init = true;

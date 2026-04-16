@@ -1,5 +1,8 @@
-mod game_class;
+pub mod game_class;
 pub use self::game_class::Game;
+
+pub mod info_fn;
+pub use info_fn::info; 
 
 // CONSTANTS
 
@@ -22,7 +25,6 @@ pub struct State {
 }
 
 // State functions
-mod info_fn;
 mod play_fn;
 mod bot_fn;
 

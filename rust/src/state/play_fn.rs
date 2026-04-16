@@ -2,6 +2,9 @@ use super::Game;
 use super::State;
 use super::ALL_POS;
 
+// import info
+use crate::state::info_fn::info;
+
 
 impl State {
     
@@ -83,7 +86,7 @@ impl State {
         std::mem::swap(&mut game.player, &mut game.opponent);
 
         // update info
-        self.info( game );
+        info( game );
 
         // checks for checks
         self.check_check( game );
@@ -103,6 +106,8 @@ impl State {
         // check for wins and draws
         self.win_check( game );
         self.draw_check( game );
+
+        println!("castle : {:?}", game.castle)
     }
 
 
@@ -124,7 +129,7 @@ impl State {
                 let mut test_game = game.clone();
                 test_game.board[place.0 as usize][place.1 as usize] = test_game.board[loc.0 as usize][loc.1 as usize];
                 test_game.board[loc.0 as usize][loc.1 as usize] = (' ',' ');
-                self.info( &mut test_game );
+                info( &mut test_game );
 
                 if test_game.op_cover()[king_pos.0 as usize][king_pos.1 as usize].is_empty() {
                     return;
