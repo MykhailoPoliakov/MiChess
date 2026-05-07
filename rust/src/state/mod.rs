@@ -6,7 +6,6 @@ pub use info_fn::info;
 
 // CONSTANTS
 
-// const DRAW_PIECES: [&'static str;6] = ["br", "bq", "bp", "wr", "wq", "wp"];
 pub const ALL_POS: [(i8, i8); 64] = [
     (0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7),
     (1,0), (1,1), (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),

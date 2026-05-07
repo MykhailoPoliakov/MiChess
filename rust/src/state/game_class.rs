@@ -1,3 +1,4 @@
+// Saves all the info about the game
 #[derive(Clone)]
 pub struct Game {
 
@@ -10,8 +11,7 @@ pub struct Game {
     // info for stoping the game
     pub mode: char,
     pub moves_amount: i16,
-    pub captured: Vec<(char,char)>,
-
+    
     // players
     pub player: char,
     pub opponent: char,
@@ -22,6 +22,7 @@ pub struct Game {
     pub legal:   [[Vec<(i8,i8)>;8];8],
 
     // history
+    pub captured: Vec<(char,char)>,
     pub history: Vec<[[(char,char);8];8]>,
 
 }
@@ -29,7 +30,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> Self {
         Game {
-            // game info
+            // starting board
             board: [
                 [('b','r'), ('b','h'), ('b','b'), ('b','q'), ('b','k'), ('b','b'), ('b','h'), ('b','r')],
                 [('b','p'), ('b','p'), ('b','p'), ('b','p'), ('b','p'), ('b','p'), ('b','p'), ('b','p')],
@@ -40,6 +41,8 @@ impl Game {
                 [('w','p'), ('w','p'), ('w','p'), ('w','p'), ('w','p'), ('w','p'), ('w','p'), ('w','p')],
                 [('w','r'), ('w','h'), ('w','b'), ('w','q'), ('w','k'), ('w','b'), ('w','h'), ('w','r')],
             ],
+            
+            // game info
             en_passant: -1,
             castle: [[true,true],[true,true]],
             check: false,
@@ -47,7 +50,6 @@ impl Game {
             // info for stoping the game
             mode: 'g',
             moves_amount: 0,
-            captured: Vec::new(),
 
             // players
             player: 'w',
@@ -59,27 +61,29 @@ impl Game {
             legal:   std::array::from_fn(|_| std::array::from_fn(|_| Vec::new())),
             
             // history
+            captured: Vec::new(),
             history: Vec::new(),
         }
     }
 
+
+    // get player cover
     pub fn pl_cover(&mut self) -> &mut [[Vec<(i8,i8)>;8];8] {
         if self.player == 'w' {
-            &mut self.w_cover
+            return &mut self.w_cover;
         } else {
-            &mut self.b_cover
+            return &mut self.b_cover;
         }
     }
 
+    // get opponent cover
     pub fn op_cover(&mut self) -> &mut [[Vec<(i8,i8)>;8];8] {
         if self.player == 'b' {
-            &mut self.w_cover
+            return &mut self.w_cover;
         } else {
-            &mut self.b_cover
+            return &mut self.b_cover;
         }
     }
-
-
 }
 
 

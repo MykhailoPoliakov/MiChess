@@ -4,12 +4,9 @@ from pathlib import Path
 
 class Output:
     """
-            somthing
+        somthing
 
-            Args:
-                clock:
-                    pygame clock
-            """
+    """
     ALL_POS = tuple((i, j) for i in range(8) for j in range(8))
     def __init__(self, clock ) -> None:
         # pygame parts

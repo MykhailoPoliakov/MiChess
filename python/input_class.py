@@ -6,18 +6,14 @@ class Input:
     ALL_POS = tuple((i, j) for i in range(8) for j in range(8))
     def __init__(self) -> None:
 
+        self.history_key = ''
+
         # for making moves
         self.action: list = []
 
         # for setting starting values
         self.start: list = []
         self.start_values: list[str] = ['','']
-
-        # f3 button switch
-        self.f3_switch = False
-
-        # restart switch
-        self.restart = False
 
         # start buttons
         self.__start_buttons: dict = {

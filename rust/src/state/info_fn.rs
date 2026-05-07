@@ -1,14 +1,15 @@
 use super::Game;
 use super::ALL_POS;
 
-
+// constants of how pieces move
 const ROOK_MOVES: [(i8, i8); 4] = [(1, 0), (-1, 0), (0, -1), (0, 1)];
 const BISHOP_MOVES: [(i8, i8); 4] = [(1, -1), (-1, 1), (-1, -1), (1, 1)];
 const KNIGHT_MOVES: [(i8, i8); 8] = [(1, -2), (-1, 2), (-1, -2), (1, 2), (2, -1), (-2, 1), (-2, -1), (2, 1)];
 const KING_MOVES: [(i8, i8); 8] = [(1, 0), (-1, 0), (0, -1), (0, 1), (1, -1), (-1, 1), (-1, -1), (1, 1)];
 
 
-
+// Analyses the board, saves all the legal moves and covers for exact board position.
+// Changes: game.legal , game.w_cover , game.b_cover
 pub fn info(game: &mut Game) -> () {
 
     // cleaning
@@ -16,29 +17,28 @@ pub fn info(game: &mut Game) -> () {
     game.b_cover = std::array::from_fn(|_| std::array::from_fn(|_| Vec::new()));
     game.legal   = std::array::from_fn(|_| std::array::from_fn(|_| Vec::new()));
 
+    // get variables 
     let legal = &mut game.legal;
     let board: &[[(char, char); 8]; 8] = &game.board;
 
+    // other quenue for kings, iterate through them after the other pieces
     let mut kings_places: Vec<(i8, i8)> = Vec::new();
-
-    println!("info activated");
     
+    // start iteration
     for place in ALL_POS {
-
         if board[place.0 as usize][place.1 as usize].0 == ' ' {
             continue;
         };
 
+        // get variables 
         let player: char = board[place.0 as usize][place.1 as usize].0;
         let opponent: char = if player == 'w' {'b'} else {'w'};
-        
         let p_cover = if player == 'w' { &mut game.w_cover } else { &mut game.b_cover };
 
-
+        // match the piece
         match board[place.0 as usize][place.1 as usize].1 {
 
             'p' => {let direction = if player == 'w' { -1 } else { 1 };
-
                     if !(place.0 + direction >= 0 || place.0 + direction < 8)  {
                         continue;
                     }
@@ -54,7 +54,6 @@ pub fn info(game: &mut Game) -> () {
                     // one move ahead
                     if game.board[(place.0 + direction) as usize ][place.1 as usize] == (' ',' ') {
                         legal[place.0 as usize][place.1 as usize].push((place.0 + direction,place.1));
-
                         // two moves ahead
                         if (place.0 + direction*2 >= 0 && place.0 + direction*2 < 8) &&
                         game.board[(place.0 + direction*2) as usize ][place.1 as usize].0 == ' ' &&
@@ -101,25 +100,19 @@ pub fn info(game: &mut Game) -> () {
                             let num1 = place.0 + i*direction.0;
                             let num2 = place.1 + i*direction.1;
                             if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
+                                // cover 
+                                p_cover[num1 as usize][num2 as usize].push( place );
+                                // legal
                                 if board[num1 as usize][num2 as usize].0 == player {
                                     break
-                                    }
-                                legal[place.0 as usize][place.1 as usize].push((num1, num2));
-                                if board[num1 as usize][num2 as usize].0 == opponent {
-                                    break
                                 }
-                            }
-                        }
-                        for i in 1..8 {
-                            let num1 = place.0 + i*direction.0;
-                            let num2 = place.1 + i*direction.1;
-                            if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
-                                p_cover[num1 as usize][num2 as usize].push( place );
+                                legal[place.0 as usize][place.1 as usize].push((num1, num2));
+                                // stop
                                 if ![(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
                                     break
                                 }
                             }
-                        }   
+                        } 
                     }
                 },
 
@@ -128,25 +121,19 @@ pub fn info(game: &mut Game) -> () {
                             let num1 = place.0 + i*direction.0;
                             let num2 = place.1 + i*direction.1;
                             if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
+                                // cover 
+                                p_cover[num1 as usize][num2 as usize].push( place );
+                                // legal
                                 if board[num1 as usize][num2 as usize].0 == player {
                                     break
-                                    }
-                                legal[place.0 as usize][place.1 as usize].push((num1, num2));
-                                if board[num1 as usize][num2 as usize].0 == opponent {
-                                    break
                                 }
-                            }
-                        }
-                        for i in 1..8 {
-                            let num1 = place.0 + i*direction.0;
-                            let num2 = place.1 + i*direction.1;
-                            if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
-                                p_cover[num1 as usize][num2 as usize].push( place );
+                                legal[place.0 as usize][place.1 as usize].push((num1, num2));
+                                // stop
                                 if ![(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
                                     break
                                 }
                             }
-                        }   
+                        } 
                     }
                 },
 
@@ -155,25 +142,19 @@ pub fn info(game: &mut Game) -> () {
                             let num1 = place.0 + i*direction.0;
                             let num2 = place.1 + i*direction.1;
                             if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
+                                // cover 
+                                p_cover[num1 as usize][num2 as usize].push( place );
+                                // legal
                                 if board[num1 as usize][num2 as usize].0 == player {
                                     break
-                                    }
-                                legal[place.0 as usize][place.1 as usize].push((num1, num2));
-                                if board[num1 as usize][num2 as usize].0 == opponent {
-                                    break
                                 }
-                            }
-                        }
-                        for i in 1..8 {
-                            let num1 = place.0 + i*direction.0;
-                            let num2 = place.1 + i*direction.1;
-                            if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
-                                p_cover[num1 as usize][num2 as usize].push( place );
+                                legal[place.0 as usize][place.1 as usize].push((num1, num2));
+                                // stop
                                 if ![(' ',' '),(opponent,'k')].contains(&board[num1 as usize][num2 as usize]) {
                                     break
                                 }
                             }
-                        }   
+                        } 
                     }
                 },
             
@@ -182,12 +163,16 @@ pub fn info(game: &mut Game) -> () {
             _   => (),
         }
     }
-    // kings covers
+
+
+    // iterate through kings (cover)
     for place in kings_places.clone() {
 
+        // get variables 
         let player: char = board[place.0 as usize][place.1 as usize].0;
         let p_cover = if player == 'w' { &mut game.w_cover } else { &mut game.b_cover };
 
+        // check all moves
         for num in KING_MOVES {
             let num1: i8 = place.0 + num.0;
             let num2: i8 = place.1 + num.1;
@@ -196,17 +181,18 @@ pub fn info(game: &mut Game) -> () {
             }
         }
     }
-    // kings legal
+    // iterate through kings (legal)
     for place in kings_places {
 
+        // get variables 
         let player: char = board[place.0 as usize][place.1 as usize].0;
-        
         let (p_cover, op_cover) = if player == 'w' {
             (&mut game.w_cover, &mut game.b_cover)
         } else {
             (&mut game.b_cover, &mut game.w_cover)
         };
 
+        // check all moves
         for num in KING_MOVES {
             let num1: i8 = place.0 + num.0;
             let num2: i8 = place.1 + num.1;
@@ -217,10 +203,11 @@ pub fn info(game: &mut Game) -> () {
                 }
             }
         }
+
         // castle
         let s: usize = if player == 'w' {7} else {0};
         let direction: usize = if player == 'w' {0} else {1};
-        
+
         if place == (s as i8,4) {
             // left
             if game.castle[direction][0] {

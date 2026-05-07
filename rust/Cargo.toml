@@ -10,3 +10,4 @@ name = "michess"
 [dependencies]
 once_cell = "1.21.4"
 pyo3 = "0.28.3"
+rand = "0.8.5"

@@ -9,10 +9,15 @@ from output_class import Output
 
 class Settings:
     def __init__(self):
+        # game
         self.mode: str = 's'
-        self.bot: str = ''
+        self.bot: str  = ''
         self.side: str = ''
-        self.move_made = False
+        self.move_made: bool = False
+
+        # history
+        self.history_board = None
+        self.history_index = 0
 
 
 def main():
@@ -45,6 +50,7 @@ def main():
         match sett.mode:
 
             case 's':
+                # start
                 if inp.start:
                     sett.side, bot_mode = inp.start
                     if bot_mode == 'bot': 
@@ -55,10 +61,7 @@ def main():
                     inp.start = []
 
 
-
-
             case 'g':
-
                 # person makes move
                 if len(inp.action) == 2:
                     mc.play(*inp.action)
@@ -69,6 +72,26 @@ def main():
                 if sett.bot == mc.turn():
                     mc.autoplay()
                     sett.move_made = True
+
+                # if game stoped
+                if sett.move_made:
+                    match mc.mode():
+                        case 'w' | 'b' | 'd' :
+                            sett.mode = 'g'
+
+                # history
+                if inp.history_key:
+                    history = mc.history()
+                    
+                    if inp.history_key == 'l' and len(history) > (sett.history_index + 1):
+                        sett.history_index += 1
+                    elif inp.history_key == 'r' and sett.history_index:
+                        sett.history_index -= 1
+
+                    if sett.history_index:
+                        sett.history_board = history[len(history) - sett.history_index - 1]
+
+                    inp.history_key = ''
 
 
             case "e":
@@ -105,6 +128,17 @@ def main():
                             inp.finish_move( mouse_pos )
 
 
+                    # history
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        sett.history_index = 0
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_LEFT:
+                            inp.history_key = 'l'
+                        elif event.key == pygame.K_RIGHT:
+                            inp.history_key = 'r'
+
+
                 case 'e':
                     pass
 
@@ -122,8 +156,12 @@ def main():
                 outp.print_start_screen()
 
             case 'g':
-                # print main board
-                outp.print_board( mc.board() , (480, 60))
+                if not sett.history_index:
+                    # print main board
+                    outp.print_board( mc.board() , (480, 60))
+                else:
+                    # history board
+                    outp.print_board( sett.history_board , (480, 60))
 
                 # for testing
                 if sett.move_made:
