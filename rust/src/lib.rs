@@ -1,5 +1,5 @@
 pub mod state;
-pub use state::{State, Game, info};
+pub use state::{Game, info, movement, check_move, bot_play};
 
 // imports for making py library
 use once_cell::sync::Lazy;
@@ -9,7 +9,6 @@ use pyo3::prelude::*;
 
 // objects
 static GAME: Lazy<Mutex<Game>> = Lazy::new(|| { Mutex::new(Game::new()) });
-static STATE: Lazy<Mutex<State>> = Lazy::new(|| { Mutex::new(State::new()) });
 static INIT: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 
 
@@ -20,18 +19,18 @@ static INIT: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 #[pyfunction]
 fn init() -> PyResult<()> {
     let mut game = GAME.lock().unwrap();
-    let mut state = STATE.lock().unwrap();
     let mut init = INIT.lock().unwrap();
     
     *game = Game::new();  
-    *state = State::new();
+    let board = game.board;
 
     info( &mut game );
     
     if game.mode != 'g' { return Err(pyo3::exceptions::PyRuntimeError::new_err("Board is invalid.")); }
     *init = true;
 
-    state.history_push(&mut game);
+    game.history.push( board );
+
     Ok(())
 }
 
@@ -39,16 +38,15 @@ fn init() -> PyResult<()> {
 #[pyfunction]
 fn play(start_pos: (i8,i8), end_pos: (i8,i8)) -> PyResult<bool> {
     let mut game = GAME.lock().unwrap();
-    let mut state = STATE.lock().unwrap();
     let init = INIT.lock().unwrap(); 
 
     if game.mode != 'g' || *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
 
-    if !state.check_move( &game, &start_pos, &end_pos) {
+    if !check_move( &game, &start_pos, &end_pos) {
         println!("Move was illigal because of check on king");
         return Ok(false);
     }
-    if !state.movement( &mut game, &start_pos, &end_pos, true) {
+    if !movement( &mut game, &start_pos, &end_pos, true) {
         println!("Move was illigal");
         return Ok(false);
     } 
@@ -59,13 +57,12 @@ fn play(start_pos: (i8,i8), end_pos: (i8,i8)) -> PyResult<bool> {
 #[pyfunction]
 fn autoplay() -> PyResult<()> {
     let mut game = GAME.lock().unwrap();
-    let mut state = STATE.lock().unwrap();
     let init = INIT.lock().unwrap(); 
 
 
     if game.mode != 'g' || *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
 
-    state.bot_play( &mut game, 4 );
+    bot_play( &mut game, 4 );
     Ok(())
 }
 

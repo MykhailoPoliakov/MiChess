@@ -1,9 +1,6 @@
 pub mod game_class;
 pub use self::game_class::Game;
 
-pub mod info_fn;
-pub use info_fn::info; 
-
 // CONSTANTS
 
 pub const ALL_POS: [(i8, i8); 64] = [
@@ -17,32 +14,23 @@ pub const ALL_POS: [(i8, i8); 64] = [
     (7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7),
 ];
 
-// STATE class
+// functions
+pub mod info_fn;
+pub use info_fn::info; 
 
-pub struct State {
-    pub histiry_bool: bool, 
-}
+pub mod play_fn;
+pub use play_fn::movement;
+pub use play_fn::check_move;
 
-// State functions
-mod play_fn;
-mod bot_fn;
+pub mod bot_fn;
+pub use bot_fn::bot_play;
 
 
-impl State {
-    pub fn new() -> Self {
-        State {
-            histiry_bool: false,
-        }
-    }
 
-    pub fn opponent(&self, player: char) -> char {
-        match player {
-            'w' => return 'b',
-            _   => return 'w',
-        }
-    }
-
-    pub fn history_push(&self, game: &mut Game ) {
-        game.history.push( game.board.clone());
+pub fn opponent(player: char) -> char {
+    match player {
+        'w' => return 'b',
+        _   => return 'w',
     }
 }
+

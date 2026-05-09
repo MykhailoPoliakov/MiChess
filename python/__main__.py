@@ -166,16 +166,18 @@ def main():
                 # for testing
                 if sett.move_made:
                     sett.move_made = False
-                    print("legal")
+                    print("\n---Updated game information---")
+
+                    print("\nlegal")
                     for i in mc.legal():
                         print(i)
-                    print("cover w")
+                    print("\ncover w")
                     for i in mc.cover('w'):
                         print(i)
-                    print("cover b")
+                    print("\ncover b")
                     for i in mc.cover('b'):
                         print(i)
-                    print(mc.mode())
+                    print(f"\nCurrent game mode : {mc.mode()}\n\n")
 
             case 'e':
                 pass
