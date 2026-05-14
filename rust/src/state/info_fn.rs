@@ -167,11 +167,9 @@ pub fn info(game: &mut Game) -> () {
 
     // iterate through kings (cover)
     for place in kings_places.clone() {
-
         // get variables 
         let player: char = board[place.0 as usize][place.1 as usize].0;
         let p_cover = if player == 'w' { &mut game.w_cover } else { &mut game.b_cover };
-
         // check all moves
         for num in KING_MOVES {
             let num1: i8 = place.0 + num.0;
@@ -183,21 +181,14 @@ pub fn info(game: &mut Game) -> () {
     }
     // iterate through kings (legal)
     for place in kings_places {
-
         // get variables 
         let player: char = board[place.0 as usize][place.1 as usize].0;
-        let (p_cover, op_cover) = if player == 'w' {
-            (&mut game.w_cover, &mut game.b_cover)
-        } else {
-            (&mut game.b_cover, &mut game.w_cover)
-        };
-
+        let op_cover= if player == 'w' { &mut game.b_cover } else { &mut game.w_cover };
         // check all moves
         for num in KING_MOVES {
             let num1: i8 = place.0 + num.0;
             let num2: i8 = place.1 + num.1;
             if num1 >= 0 && num1 < 8 && num2 >= 0 && num2 < 8 {
-                p_cover[num1 as usize][num2 as usize].push( place );
                 if board[num1 as usize][num2 as usize].0 != player && op_cover[num1 as usize][num2 as usize].is_empty() {
                     legal[place.0 as usize][place.1 as usize].push((num1, num2));
                 }

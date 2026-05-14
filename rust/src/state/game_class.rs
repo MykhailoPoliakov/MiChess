@@ -8,6 +8,10 @@ pub struct Game {
     pub castle: [[bool;2];2],
     pub check: bool,
 
+    // kings
+    pub w_king_pos: (i8,i8),
+    pub b_king_pos: (i8,i8),
+
     // info for stoping the game
     pub mode: char,
     pub moves_amount: i16,
@@ -47,6 +51,10 @@ impl Game {
             castle: [[true,true],[true,true]],
             check: false,
 
+            //kings
+            w_king_pos: (7,4),
+            b_king_pos: (0,4),
+
             // info for stoping the game
             mode: 'g',
             moves_amount: 0,
@@ -68,20 +76,28 @@ impl Game {
 
 
     // get player cover
-    pub fn pl_cover(&mut self) -> &mut [[Vec<(i8,i8)>;8];8] {
+    pub fn pl_cover(&self) -> &[[Vec<(i8,i8)>;8];8] {
         if self.player == 'w' {
-            return &mut self.w_cover;
+            return &self.w_cover;
         } else {
-            return &mut self.b_cover;
+            return &self.b_cover;
         }
     }
 
     // get opponent cover
-    pub fn op_cover(&mut self) -> &mut [[Vec<(i8,i8)>;8];8] {
+    pub fn op_cover(&self) -> &[[Vec<(i8,i8)>;8];8] {
         if self.player == 'b' {
-            return &mut self.w_cover;
+            return &self.w_cover;
         } else {
-            return &mut self.b_cover;
+            return &self.b_cover;
+        }
+    }
+
+    pub fn king_pos(&self, side: char) -> &(i8,i8) {
+        if side == 'w' {
+            return &self.w_king_pos;
+        } else {
+            return &self.b_king_pos;
         }
     }
 }

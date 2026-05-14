@@ -55,9 +55,12 @@ pub fn movement(game: &mut Game, start_pos: &(i8,i8), end_pos: &(i8,i8), save: b
         }
         if game.player == 'w' {
             game.castle[0] = [false,false];
+            game.w_king_pos = *start_pos;
         } else {
             game.castle[1] = [false,false];
+            game.b_king_pos = *start_pos;
         }
+
     }
 
     // 50 move rule

@@ -24,6 +24,7 @@ pub use play_fn::check_move;
 
 pub mod bot_fn;
 pub use bot_fn::bot_play;
+pub use bot_fn::evaluate;
 
 
 

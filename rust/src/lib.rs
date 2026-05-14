@@ -62,7 +62,7 @@ fn autoplay() -> PyResult<()> {
 
     if game.mode != 'g' || *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
 
-    bot_play( &mut game, 4 );
+    bot_play( &mut game, 1 );
     Ok(())
 }
 

@@ -1,18 +1,13 @@
 use super::Game;
 use super::ALL_POS;
 
-use crate::state::opponent;
 use crate::state::play_fn::movement;
 
 use rand::distributions::WeightedIndex;
 use rand::prelude::*;
 
-// const PINF: i32 =  10_000_000;
-// const NINF: i32 = -10_000_000;
-
-struct Debug {
-    count: u64,
-}
+const PINF: i32 =  10_000_000;
+const NINF: i32 = -10_000_000;
 
 
 
@@ -28,21 +23,12 @@ pub fn bot_play(game: &mut Game, max_depth: i8) {
             for ref_end_pos in &game.legal[start_pos.0 as usize][start_pos.1 as usize] {
                 let end_pos = *ref_end_pos;
                 // create new game and make move if legal
-                let new_game = & mut game.clone();
+                let new_game = &mut game.clone();
                 if movement(new_game, &start_pos, &end_pos, false) {
                     // for every legal move
-                    
-                    // for debugging
-                    let mut debug = Debug { count: 0 };
 
-                    let value = deep_analyze(0, new_game, init_player, max_depth, &mut debug);
-                    
+                    let value = analyze_opponent(0, new_game, init_player, max_depth);
                     moves.push(((start_pos, end_pos), value));
-
-
-                    // for debugging
-                    println!("---Move calculated : {:?}---", ((start_pos, end_pos), value));
-                    println!("Amount of recursions : {:?}\n", debug.count);
 
                 }
             }
@@ -50,13 +36,13 @@ pub fn bot_play(game: &mut Game, max_depth: i8) {
     }
 
     // make move
-    let final_move = choose_move(&mut moves);
-    movement(game, &final_move.0, &final_move.1, true);
+    let chosen_move = choose_move(&mut moves);
+    movement(game, &chosen_move.0, &chosen_move.1, true);
 
     // console ouput
     println!("---------------------");
     println!("---Bot makes move!---");
-    println!(" choosen move: {final_move:?}");
+    println!(" chosen move: {chosen_move:?}");
     println!("---------------------");
 }
 
@@ -96,8 +82,6 @@ fn choose_move( moves: &mut Vec<( ((i8,i8),(i8,i8)) , i32 )> ) -> ((i8,i8),(i8,i
         }
 
         weights.push(weight);
-
-        
     }
 
     println!("--Choose move result : --");
@@ -114,85 +98,244 @@ fn choose_move( moves: &mut Vec<( ((i8,i8),(i8,i8)) , i32 )> ) -> ((i8,i8),(i8,i
 
 
 
-// broken, need fix
-fn deep_analyze(depth: i8, game1: &mut Game, init_player: char, max_depth: i8, debug: & mut Debug) -> i32 {
-
-    let mut opponent_moves: Vec<( ((i8,i8),(i8,i8)) , i32 )> = Vec::new(); 
-    
-    if game1.player == init_player {
-        panic!("bot is broken")
-    }
-
-    // iterating through all legal opponent moves
-    for op_start_pos in ALL_POS {
-        if game1.board[op_start_pos.0 as usize][op_start_pos.1 as usize].0 == game1.player { 
-            for rop_end_pos in &game1.legal[op_start_pos.0 as usize][op_start_pos.1 as usize] {
-                let op_end_pos = *rop_end_pos;
-                // create new game and make move if legal
-                let game2 = &mut game1.clone();
-                if movement(game2, &op_start_pos, &op_end_pos, false) {
-                    // for every position
-    
-                    let mut player_moves:   Vec<( ((i8,i8),(i8,i8)) , i32 )> = Vec::new(); 
 
 
-                    // iterating through all legal player moves
-                    for pl_start_pos in ALL_POS {
-                        if game2.board[pl_start_pos.0 as usize][pl_start_pos.1 as usize].0 == game2.player { 
-                            for rpl_end_pos in &game2.legal[pl_start_pos.0 as usize][pl_start_pos.1 as usize] {
-                                let pl_end_pos = *rpl_end_pos;
-                                // create new game and make move if legal
-                                let game3 = &mut game2.clone();
-                                if movement(game3, &pl_start_pos, &pl_end_pos, false) {
-                                    // for every position
+fn analyze_opponent(depth: i8, game: &Game, init_player: char, max_depth: i8) -> i32 {
+    let mut moves: Vec<( ((i8,i8),(i8,i8)) , i32 )> = Vec::new(); 
 
-                                    //debug
-                                    debug.count += 1;
+    println!("started analyzing opponent");
 
-                                    let (mut player_value, verdict) = calculate(game3, init_player);
-                                    if verdict && depth <= max_depth {
-                                        player_value = deep_analyze(depth + 1, game3, init_player, max_depth, debug);
-                                    }
+    // start iteration
+    for start_pos in ALL_POS {
+        if game.board[start_pos.0 as usize][start_pos.1 as usize].0 == game.player { 
+            for r_end_pos in &game.legal[start_pos.0 as usize][start_pos.1 as usize] {
+                let end_pos = *r_end_pos;
 
+                // make imaginary move
+                let new_game = &mut game.clone();
+                if movement(new_game, &start_pos, &end_pos, false) {
+                    // if move is legal
 
-
-                                    player_moves.push(((pl_start_pos, pl_end_pos), player_value));
-                                }
-                            }
-                        }
+                    // if game is finished
+                    let status = status_check(new_game.mode, init_player);
+                    if status != 0 {
+                        moves.push(((start_pos, end_pos), status));
+                        continue;
                     }
 
+                    // if game continues
+                    let deeper = deeper_opponent(game, init_player);
 
-
-
-                    let opponent_value = player_moves.iter().max_by_key(|x| x.1).unwrap().1;
-                    opponent_moves.push(((op_start_pos, op_end_pos), opponent_value));
+                    if deeper || moves.is_empty() {
+                        let value = analyze_player(depth, new_game, init_player, max_depth);
+                        moves.push(((start_pos, end_pos), value));
+                    }
                 }
             }
         }
-    }
+    };
 
-    let result = opponent_moves.iter().min_by_key(|x| x.1).unwrap().1;
-    return result
+    // choose worst player outcome
+    let chosen_move = moves.iter().min_by_key(|x| x.1).unwrap().1;
+    return chosen_move
 }
 
 
 
+
+
+
+
+fn analyze_player(depth: i8, game: &Game, init_player: char, max_depth: i8) -> i32 {
+    let mut moves: Vec<( ((i8,i8),(i8,i8)) , i32 )> = Vec::new(); 
+
+    println!("started analyzing player");
+
+    // start iteration
+    for start_pos in ALL_POS {
+        if game.board[start_pos.0 as usize][start_pos.1 as usize].0 == game.player { 
+            for r_end_pos in &game.legal[start_pos.0 as usize][start_pos.1 as usize] {
+                let end_pos = *r_end_pos;
+
+                // make imaginary move
+                let new_game = &mut game.clone();
+                if movement(new_game, &start_pos, &end_pos, false) {
+                    // if move is legal
+
+                    // if game is finished
+                    let status = status_check(new_game.mode, init_player);
+                    if status != 0 {
+                        moves.push(((start_pos, end_pos), status));
+                        continue;
+                    }
+
+                    // if game continues
+                    let deeper = deeper_player(game, init_player);
+                    let value: i32;
+
+                    // go deeper if needed
+                    if deeper && depth < max_depth {
+                        value = analyze_opponent(depth + 1, new_game, init_player, max_depth);
+                    } else {
+                        value = evaluate(game);
+                    }
+
+                    // save move info
+                    moves.push(((start_pos, end_pos), value));
+
+                }
+            }
+        }
+    };
+
+    // choose best player move
+    let chosen_move = moves.iter().max_by_key(|x| x.1).unwrap().1;
+    return chosen_move
+}
+
+
+
+
+// check if game is runnig or it is finished
+fn status_check( mode: char, init_player: char ) -> i32 {
+    match mode {
+        'd' => return 0,
+        'w' => if init_player == 'w' { return PINF; } else { return NINF },
+        'b' => if init_player == 'b' { return PINF; } else { return NINF },
+         _  => 0, 
+    }
+}
+
+
+
+
+fn deeper_player(game: &Game, init_player: char) -> bool { 
+    true 
+}
+
+fn deeper_opponent(game: &Game, init_player: char) -> bool { 
+    true 
+}
+
+
 // calculate position worth
-fn calculate(game: &Game, init_player: char) -> (i32,bool) {
+pub fn evaluate(game: &Game) -> i32 {
     let mut value = 0;
 
-    // calculate basic piece amount
-    value += (player_worth(&game.board, init_player) - player_worth(&game.board, opponent(init_player))) * 1000;
+    let init_player = game.opponent;
+    let init_opponent = game.player;
+
+    let pl_king = game.king_pos(init_player);
+    let op_king = game.king_pos(init_opponent);
+
+    for place in ALL_POS {
+
+        // init_player pieces 
+        if game.board[place.0 as usize][place.1 as usize].0 == init_player {
+            let current_piece_worth = piece_worth(game.board[place.0 as usize][place.1 as usize]);
+
+            // material amount
+            value += current_piece_worth * 1000;
+
+
+            // lost pieces
+            if !game.pl_cover()[place.0 as usize][place.1 as usize].is_empty() {
+                // if attacked and not defended
+                if game.op_cover()[place.0 as usize][place.1 as usize].is_empty() {
+                    value -= current_piece_worth * 1000;
+                // if attacked and defended
+                } else {
+                    // game simulation
+                    let mut pl_points: Vec<i32> = Vec::new();
+                    let mut op_points: Vec<i32> = Vec::new();
+                    
+                    for piece in &game.pl_cover()[place.0 as usize][place.1 as usize] {
+                        op_points.push(piece_worth(game.board[piece.0 as usize][piece.1 as usize]));
+                    }
+                    for piece in &game.op_cover()[place.0 as usize][place.1 as usize] {
+                        pl_points.push(piece_worth(game.board[piece.0 as usize][piece.1 as usize]));
+                    }
+
+                    pl_points.sort_by(|a, b| b.cmp(a));
+                    op_points.sort_by(|a, b| b.cmp(a));
+
+                    let mut current: i32 = current_piece_worth;
+                    let mut points: i32 = 0;
+                
+                    loop {
+
+                        points -= current;
+                        current = op_points.pop().unwrap();
+                        if pl_points.is_empty() {
+                            if points < 0 {
+                                value += points * 1000;
+                            }
+                            break;
+                        }
+                        
+                        points += current;
+                        current = pl_points.pop().unwrap();
+                        if op_points.is_empty() {
+                            if points < 0 {
+                                value += points * 1000;
+                            }
+                            break;
+                        }
+
+                        if points < 0 {
+                            value += points * 1000;
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+
+                
+            
+            // how many covers
+            for _ in &game.op_cover()[place.0 as usize][place.1 as usize] {
+                value += 10; 
+            }
+
+            // how many threats
+            for _ in &game.pl_cover()[place.0 as usize][place.1 as usize] {
+                value -= 10; 
+            }
+            
+            // more possible moves
+            if game.legal[place.0 as usize][place.1 as usize].is_empty() {
+                value -= current_piece_worth * 100;
+            } else {
+                for _ in &game.legal[place.0 as usize][place.1 as usize] {
+                    value += 5;
+                }
+            }
+
+
+
+
+        // init_opponent pieces
+        } else if game.board[place.0 as usize][place.1 as usize].0 == init_opponent {
+            let current_piece_worth = piece_worth(game.board[place.0 as usize][place.1 as usize]);
+
+            // material amount
+            value -= current_piece_worth * 1000;
+
+
+
+        }
+    }
     
-    return (value,true);
+    return value;
 }
 
 
 
 
 // get how much a player`s all pieces worth
-fn player_worth(board: &[[(char,char);8];8], player: char) -> i32 {
+fn _player_worth(board: &[[(char,char);8];8], player: char) -> i32 {
     let mut value: i32 = 0;
     // iterate through all pieces
     for place in ALL_POS {
@@ -211,7 +354,7 @@ fn piece_worth(piece: (char,char)) -> i32 {
         'b'|'h' => return 3,
         'r' => return 5,
         'q' => return 9,
-        'k' => return 100,
+        'k' => return 12,
             _  => return 0,
     }
 }
