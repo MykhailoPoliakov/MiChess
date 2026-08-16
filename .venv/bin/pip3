@@ -1,4 +1,4 @@
-#!/home/michael/projects/code/MiChess/.venv/bin/python3
+#!/home/michael/projects/code/MiChess/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

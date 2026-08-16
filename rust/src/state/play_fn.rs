@@ -8,10 +8,15 @@ use crate::state::info_fn::info;
 
 // checks if the move is legal, returns bool
 pub fn check_move(game: &Game, start_pos: &(i8,i8), end_pos: &(i8,i8)) -> bool {
-    if game.board[start_pos.0 as usize][start_pos.1 as usize].0 != game.player     {return false;};
-    if !game.legal[start_pos.0 as usize][start_pos.1 as usize].contains( end_pos ) {return false;};
+    if game.board[start_pos.0 as usize][start_pos.1 as usize].0 != game.player     {
+        return false;
+    };
+    if !game.legal[start_pos.0 as usize][start_pos.1 as usize].contains( end_pos ) {
+        return false;
+    };
     return true;
 }
+
 
 // makes a move, returns bool
 pub fn movement(game: &mut Game, start_pos: &(i8,i8), end_pos: &(i8,i8), save: bool) -> bool {
