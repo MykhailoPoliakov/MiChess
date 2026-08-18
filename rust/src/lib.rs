@@ -1,5 +1,5 @@
 pub mod state;
-pub use state::{Game, info, movement, check_move, bot_play};
+use state::game::Game;
 
 // imports for making py library
 use once_cell::sync::Lazy;
@@ -14,22 +14,13 @@ static INIT: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 
 
 /// Initializes the game.
-/// 
-/// Without calling this function nothing will work.
 #[pyfunction]
 fn init() -> PyResult<()> {
     let mut game = GAME.lock().unwrap();
     let mut init = INIT.lock().unwrap();
     
     *game = Game::new();  
-    let board = game.board;
-
-    info( &mut game );
-    
-    if game.mode != 'g' { return Err(pyo3::exceptions::PyRuntimeError::new_err("Board is invalid.")); }
     *init = true;
-
-    game.history.push( board );
 
     Ok(())
 }
@@ -39,15 +30,9 @@ fn init() -> PyResult<()> {
 fn play(start_pos: (i8,i8), end_pos: (i8,i8)) -> PyResult<bool> {
     let mut game = GAME.lock().unwrap();
     let init = INIT.lock().unwrap(); 
+    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }
 
-    if game.mode != 'g' || *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    if !check_move( &game, &start_pos, &end_pos) {
-        println!("Move was illigal because of check on king");
-        return Ok(false);
-    }
-    if !movement( &mut game, &start_pos, &end_pos, true) {
-        println!("Move was illigal");
+    if !state::play( &mut game, start_pos, end_pos, true) {
         return Ok(false);
     } 
     return Ok(true);
@@ -58,93 +43,17 @@ fn play(start_pos: (i8,i8), end_pos: (i8,i8)) -> PyResult<bool> {
 fn autoplay() -> PyResult<()> {
     let mut game = GAME.lock().unwrap();
     let init = INIT.lock().unwrap(); 
+    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }
 
-
-    if game.mode != 'g' || *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    bot_play( &mut game, 1 );
+    state::autoplay( &mut game, 1 );
     Ok(())
 }
 
 
-/// Returns the board as [Vec<(str,str)>;8];8].
+/// Returns game info
 #[pyfunction]
-fn board() -> PyResult<[[(char,char);8];8]> {
-    let game = GAME.lock().unwrap();
-    let init = INIT.lock().unwrap(); 
-
-    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    Ok(game.board.clone())
-}
-
-/// Returns all the legal moves as [Vec<(int,int)>;8];8].
-#[pyfunction]
-fn legal() -> PyResult<[[Vec<(i8, i8)>; 8]; 8]> {
-    let game = GAME.lock().unwrap();
-    let init = INIT.lock().unwrap(); 
-    
-    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    Ok(game.legal.clone())
-}
-
-
-/// Returns choosen cover moves as [Vec<(int,int)>;8];8].
-/// Args: 
-///     'w' - for whtie cover moves.
-///     'b' - for black cover moves.
-#[pyfunction]
-fn cover( side: char ) -> PyResult<[[Vec<(i8, i8)>; 8]; 8]> {
-    let game = GAME.lock().unwrap();
-    let init = INIT.lock().unwrap(); 
-
-    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    match side {
-        'w' => Ok(game.w_cover.clone()),
-         _  => Ok(game.b_cover.clone()),
-    }
-}
-
-/// Returns whose turn it is: 
-///     'w' - for white.
-///     'b' - for black.
-#[pyfunction]
-fn turn() -> PyResult<char> {
-    let game = GAME.lock().unwrap();
-    let init = INIT.lock().unwrap(); 
-
-    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    Ok(game.player)
-}
-
-/// Returns game mode : 
-///     'g' for active game.
-///     'd' for draw. 
-///     'w' for white pieces win.
-///     'b' for black pieces win.
-#[pyfunction]
-fn mode() -> PyResult<char> {
-    let game = GAME.lock().unwrap();
-    let init = INIT.lock().unwrap(); 
-
-    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    Ok(game.mode)
-}
-
-
-/// Returns board history as Vec<[[(str,str);8];8]>.
-#[pyfunction]
-fn history() -> PyResult<Vec<[[(char,char);8];8]>> {
-    let game = GAME.lock().unwrap();
-    let init = INIT.lock().unwrap(); 
-
-    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("Game is not running.")); }
-
-    Ok(game.history.clone())
+fn get_state() -> PyResult<()> {
+    Ok(())
 }
 
 
@@ -154,11 +63,6 @@ fn history() -> PyResult<Vec<[[(char,char);8];8]>> {
 /// Call michess.init() to start the game.
 /// Call michess.play(start_pos, end_pos) or michess.autoplay to make a move.
 /// 
-/// Get board : michess.board()
-/// Get whose turn it is : michess.turn()
-/// Get game mode : michess.mode()
-/// 
-/// Other getters : michess.legal(), michess.cover( side ), michess.history()
 #[pymodule]
 fn michess(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // control functions
@@ -167,14 +71,6 @@ fn michess(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(autoplay, m)?)?;
 
     // return game info functions
-    m.add_function(wrap_pyfunction!(board, m)?)?;
-    m.add_function(wrap_pyfunction!(legal, m)?)?;
-    m.add_function(wrap_pyfunction!(cover, m)?)?;
-    m.add_function(wrap_pyfunction!(history, m)?)?;
-
-
-    // return main info functions
-    m.add_function(wrap_pyfunction!(turn, m)?)?;
-    m.add_function(wrap_pyfunction!(mode, m)?)?;
+    m.add_function(wrap_pyfunction!(get_state, m)?)?;
     Ok(())
 }

@@ -1,37 +1,25 @@
-pub mod game_class;
-pub use self::game_class::Game;
-
-// CONSTANTS
-
-pub const ALL_POS: [(i8, i8); 64] = [
-    (0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7),
-    (1,0), (1,1), (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
-    (2,0), (2,1), (2,2), (2,3), (2,4), (2,5), (2,6), (2,7),
-    (3,0), (3,1), (3,2), (3,3), (3,4), (3,5), (3,6), (3,7),
-    (4,0), (4,1), (4,2), (4,3), (4,4), (4,5), (4,6), (4,7),
-    (5,0), (5,1), (5,2), (5,3), (5,4), (5,5), (5,6), (5,7),
-    (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7),
-    (7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7),
-];
-
-// functions
-pub mod info_fn;
-pub use info_fn::info; 
+pub mod game;
+pub use game::{Game, Piece};
 
 pub mod play_fn;
-pub use play_fn::movement;
-pub use play_fn::check_move;
+pub use play_fn::play;
 
-pub mod bot_fn;
-pub use bot_fn::bot_play;
-pub use bot_fn::evaluate;
+pub mod autoplay_fn;
+pub use autoplay_fn::autoplay;
 
 
 
-pub fn opponent(player: char) -> char {
-    match player {
-        'w' => return 'b',
-        _   => return 'w',
+pub struct GameState {
+   pub history: Vec<[[Option<Piece>;8];8]>,
+   pub game: Game,
+}
+
+impl GameState {
+    pub fn new() -> Self {
+        GameState {
+            history: Vec::new(),
+            game: Game::new(),
+        }
     }
 }
 
