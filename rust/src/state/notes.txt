@@ -7,6 +7,9 @@ full main without clone in play:
 autoplay with clone:
     took: 602.726609ms
 
+autoplay on 3_800_000 iterations:
+    took: 190c
+
 
 update optimized:
     took: 15.2µs
@@ -19,3 +22,6 @@ play ((1, 3), (2, 3)):
     took: 34.7µs
 play ((1, 3), (2, 3)) optimized:
     took: 17.3µs
+
+play with no update:
+    took: 1.7µs

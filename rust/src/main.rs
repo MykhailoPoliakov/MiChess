@@ -16,8 +16,7 @@ fn main() -> () {
 
     // timed(|| game.update());
 
-
-    timed(|| play(&mut game, (1, 3), (2, 3), true));
+    timed(|| play(&mut game, ((6, 3), (5, 3)), true));
 
     // game.legal.print("Legal");
     // game.w_cover.print("Cover w");

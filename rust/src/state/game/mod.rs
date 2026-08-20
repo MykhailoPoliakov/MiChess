@@ -29,20 +29,23 @@ pub struct Game {
     pub castle: [[bool; 2]; 2],
     pub check: bool,
 
-    // kings
-    pub king_pos: [Pos; 2],
-
+    // players
+    pub player: Color,
+    
     // info for stoping the game
     pub mode: GameMode,
     pub rule_50moves: u8,
     
-    // players
-    pub player: Color,
+    // kings
+    pub king_pos: [Pos; 2],
 
     // moves
     pub w_cover: Grid,
     pub b_cover: Grid,
     pub legal:   Grid,
+
+    //moves
+    pub moves: [Vec<Move>;2],
 
     // move logs
 
@@ -78,6 +81,7 @@ impl Game {
             w_cover: Grid::new(),
             b_cover: Grid::new(),
             legal:   Grid::new(),
+            moves: [Vec::new(),Vec::new()],
         };
         game.update();
         game

@@ -17,6 +17,8 @@ impl Game {
         self.w_cover.clean();
         self.b_cover.clean();
         self.legal.clean();
+        self.moves[0].clear();
+        self.moves[1].clear();
 
         // start iteration
         for pos in ALL_POS {
@@ -48,11 +50,13 @@ impl Game {
                             let target: Pos = (pos.0 + direction, pos.1);
                             if self.board[target].is_none() {
                                 self.legal[pos].push(target);
+                                self.moves[piece.color as usize].push((pos, target));
                                 // two moves ahead
                                 let target: Pos = (pos.0 + direction*2, pos.1);
-                                if valid_int(target.1) && self.board[target].is_none() &&
+                                if valid_int(target.0) && self.board[target].is_none() &&
                                 match piece.color { Color::White => pos.0 == 6, Color::Black => pos.0 == 1 } {
                                     self.legal[pos].push(target);
+                                    self.moves[piece.color as usize].push((pos, target));
                                 }
                             }
 
@@ -63,6 +67,7 @@ impl Game {
                                 if valid_int(target.1) &&
                                 self.board[target].is_some_and(|p| p.color == piece.color.opp()) {
                                     self.legal[pos].push(target);
+                                    self.moves[piece.color as usize].push((pos, target));
                                 }
                             }
 
@@ -75,6 +80,7 @@ impl Game {
                                     self.board[target].is_some_and(|p| p.color == piece.color.opp()) &&
                                     self.en_passant == Some(target.1) {
                                         self.legal[pos].push(target);
+                                        self.moves[piece.color as usize].push((pos, target));
                                     }
                                 }
                             }
@@ -89,6 +95,7 @@ impl Game {
                                     // game.legal
                                     if !self.board[target].is_some_and(|p| p.color == piece.color) {
                                         self.legal[pos].push(target);
+                                        self.moves[piece.color as usize].push((pos, target));
                                     }
                                 }
                             }
@@ -106,6 +113,7 @@ impl Game {
                                             break
                                         }
                                         self.legal[pos].push( target );
+                                        self.moves[piece.color as usize].push((pos, target));
                                         // stop
                                         if !self.board[target].is_some_and(|p| p.color == piece.color.opp() && p.role == Role::King) {
                                             break
@@ -127,6 +135,7 @@ impl Game {
                                             break
                                         }
                                         self.legal[pos].push( target );
+                                        self.moves[piece.color as usize].push((pos, target));
                                         // stop
                                         if !self.board[target].is_some_and(|p| p.color == piece.color.opp() && p.role == Role::King) {
                                             break
@@ -148,6 +157,7 @@ impl Game {
                                             break
                                         }
                                         self.legal[pos].push( target );
+                                        self.moves[piece.color as usize].push((pos, target));
                                         // stop
                                         if !self.board[target].is_some_and(|p| p.color == piece.color.opp() && p.role == Role::King) {
                                             break
@@ -192,6 +202,7 @@ impl Game {
                     if !self.board[target].is_some_and(|p| p.color == piece.color) && 
                     op_cover[target].is_empty() {
                         self.legal[pos].push(target);
+                        self.moves[piece.color as usize].push((pos, target));
                     }
                 }
             }
@@ -207,6 +218,7 @@ impl Game {
                         self.board[(row,1)].is_none() && op_cover[(row,3)].is_empty() &&
                         self.board[(row,0)] == Some(Piece{color: piece.color.clone(), role: Role::Rook}) {
                             self.legal[pos].push((row as i8, 2));
+                            self.moves[piece.color as usize].push((pos, (row as i8, 2)));
                     }
                 } 
                 // right
@@ -215,6 +227,7 @@ impl Game {
                         self.board[(row,6)].is_none() && op_cover[(row,6)].is_empty() &&
                         self.board[(row,7)] == Some(Piece{color: piece.color.clone(), role: Role::Rook}) {
                             self.legal[pos].push((row as i8, 6));
+                            self.moves[piece.color as usize].push((pos, (row as i8, 6)));
                     }
                 }
             }

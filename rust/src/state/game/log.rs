@@ -2,6 +2,7 @@ pub use super::types::*;
 pub use super::{Game, GameMode};
 
 
+#[derive(Clone)]
 pub struct GameLog {
     pub board: Board,
     pub en_passant: Option<i8>,
@@ -12,7 +13,7 @@ pub struct GameLog {
 }
 
 impl Game {
-    pub fn save(&mut self) -> GameLog {
+    pub fn save(&self) -> GameLog {
         GameLog {
             board: self.board.clone(),
             en_passant: self.en_passant,

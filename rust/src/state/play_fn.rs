@@ -5,12 +5,13 @@ use super::game::*;
 
 
 // makes a move, returns bool
-pub fn play(game: &mut Game, start_pos: Pos, end_pos: Pos, save: bool) -> bool {
+pub fn play(game: &mut Game, mv: Move, save: bool) -> bool {
+    let (start_pos, end_pos ) = mv;
     // checks if the move is legal
     if game.mode != GameMode::Active {
         return false;
     }
-    if game.board[start_pos].is_some_and(|p| p.color == game.player) {
+    if !game.board[start_pos].is_some_and(|p| p.color == game.player) {
         return false;
     }
     if !game.legal[start_pos].contains( &end_pos ) {
@@ -50,7 +51,7 @@ pub fn play(game: &mut Game, start_pos: Pos, end_pos: Pos, save: bool) -> bool {
         },
         Role::King => {
             // make castle
-            match (start_pos, end_pos) {
+            match mv {
                 ((7,4),(7,2)) => { 
                     game.board[(7,3)] = Some(Piece{color: game.player, role: Role::Rook}); 
                     game.board[(7,0)] = None 
@@ -126,7 +127,7 @@ pub fn play(game: &mut Game, start_pos: Pos, end_pos: Pos, save: bool) -> bool {
 // Changes : game.check
 fn check_check(game: &mut Game) -> () {
     let king_pos = game.king_pos[game.player as usize];
-    game.check = !game.cover(game.player)[king_pos].is_empty()
+    game.check = !game.cover(game.player.opp())[king_pos].is_empty()
 }
 
 
@@ -141,21 +142,23 @@ fn win_check(game: &mut Game) -> () {
     if !game.legal[king_pos].is_empty() {
         return;
     }
-    for pos in ALL_POS {
-        if game.board[pos].is_some_and(|p| p.color == game.player) {
-            continue
-        }
-        for &place in &game.legal[pos] {
 
-            let mut test_game = game.clone();
-            test_game.board[place] = test_game.board[pos];
-            test_game.board[pos] = None;
-            test_game.update();
+    let log = game.save();
 
-            if test_game.cover(game.player.opp())[king_pos].is_empty() {
-                return;
-            }
+    let legal_moves = game.moves[game.player as usize].clone();
+    for mv in legal_moves {
+
+        game.board[mv.1] = game.board[mv.0];
+        game.board[mv.0] = None;
+        game.update();
+
+        if game.cover(game.player.opp())[king_pos].is_empty() {
+            game.load(log);
+            game.update();
+            return;
         }
+
+        game.load(log.clone());
     }
     game.mode = GameMode::Finished(Some(game.player.opp()));
 }

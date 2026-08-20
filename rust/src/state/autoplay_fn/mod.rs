@@ -5,7 +5,7 @@ use rand::distributions::WeightedIndex;
 use rand::prelude::*;
 
 mod analyze;
-use analyze::{analyze_opponent};
+use analyze::{analyze};
 mod evaluate;
 
 
@@ -24,7 +24,10 @@ struct MoveInfo {
 
 
 
-pub fn autoplay(game: &mut Game, max_depth: i8) -> () {
+pub fn autoplay(real_game: &mut Game, max_depth: i8) -> () {
+    let game = &mut real_game.clone();
+
+    let mut iterated = 0;
 
     let config = Config {
         init_player: game.player,
@@ -33,39 +36,38 @@ pub fn autoplay(game: &mut Game, max_depth: i8) -> () {
 
     let mut moves: Vec<(Move, i32)> = Vec::new(); 
 
+    
+    let log = game.save();
+
     // iterating through all legal moves
-    for start_pos in ALL_POS {
-        if game.board[start_pos].is_some_and(|p| p.color == game.player) { 
-            continue;
-        }
-        for &end_pos in &game.legal[start_pos] {
-            // create new game and make move if legal
-            let new_game = &mut game.clone();
-            if play(new_game, start_pos, end_pos, false) {
-                // get value for every legal move
+    for &mv in &real_game.moves[real_game.player as usize] {
+        game.load(log.clone());
+        game.update();
 
+        if play(game, mv, false) {
+            // print board 
+            println!("{}", game.board);
+            // get value for every legal move
 
-                let mut way: Vec<((i8,i8),(i8,i8))> = vec![(start_pos, end_pos)];
-                way.push((start_pos, end_pos));
-                let move_info = MoveInfo {
-                    liquidity: 2,
-                    depth: 0,
-                    way,
-                };
+            let move_info = MoveInfo {
+                liquidity: 2,
+                depth: 0,
+                way: vec![mv],
+            };
 
-                let value = analyze_opponent(&config, new_game, &move_info);
+            let value = analyze(&config, game, &move_info, &mut iterated);
+            moves.push((mv, value));
+            
 
-                moves.push(((start_pos, end_pos), value));
-
-            } 
-        }
+        } 
     }
 
     // make move
     let chosen_move = choose_move(&mut moves);
-    play(game, chosen_move.0, chosen_move.1, true);
+    play(real_game, chosen_move, true);
 
     // console ouput
+    println!("\nIteratrions done : {}", iterated);
     println!("\n---Bot makes move!---\nchosen move: {chosen_move:?}\n");
 }
 
@@ -123,7 +125,7 @@ fn choose_move( moves: &mut Vec<( ((i8,i8),(i8,i8)) , i32 )> ) -> ((i8,i8),(i8,i
 
 
 
-fn print_visual_horisontal() {
+fn _print_visual_horisontal() {
     println!("\n          Autoplay");
     println!("{}{}{}", "┌───","───┬───".repeat(18), "───┐" );
 }
