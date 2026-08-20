@@ -1,4 +1,3 @@
-pub use super::play_fn::play;
 pub use super::game::*;
 
 use rand::distributions::WeightedIndex;
@@ -25,7 +24,7 @@ struct MoveInfo {
 
 
 pub fn autoplay(real_game: &mut Game, max_depth: i8) -> () {
-    let game = &mut real_game.clone();
+    let game = &mut real_game.clone(); // clone for safety
 
     let mut iterated = 0;
 
@@ -36,17 +35,10 @@ pub fn autoplay(real_game: &mut Game, max_depth: i8) -> () {
 
     let mut moves: Vec<(Move, i32)> = Vec::new(); 
 
-    
-    let log = game.save();
-
     // iterating through all legal moves
     for &mv in &real_game.moves[real_game.player as usize] {
-        game.load(log.clone());
-        game.update();
 
-        if play(game, mv, false) {
-            // print board 
-            println!("{}", game.board);
+        if game.play(mv) {
             // get value for every legal move
 
             let move_info = MoveInfo {
@@ -57,14 +49,14 @@ pub fn autoplay(real_game: &mut Game, max_depth: i8) -> () {
 
             let value = analyze(&config, game, &move_info, &mut iterated);
             moves.push((mv, value));
-            
+            game.undo();
 
         } 
     }
 
     // make move
     let chosen_move = choose_move(&mut moves);
-    play(real_game, chosen_move, true);
+    real_game.play(chosen_move);
 
     // console ouput
     println!("\nIteratrions done : {}", iterated);

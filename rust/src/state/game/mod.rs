@@ -3,8 +3,6 @@ mod types;
 mod constants;
 pub use types::*;
 pub use constants::*;
-
-
 mod log;
 pub use log::GameLog;
 
@@ -47,7 +45,7 @@ pub struct Game {
     //moves
     pub moves: [Vec<Move>;2],
 
-    // move logs
+    pub history: Vec<GameLog>,
 
 }
 
@@ -68,20 +66,27 @@ impl Game {
             en_passant: None,
             castle: [[true,true],[true,true]],
             check: false,
+            rule_50moves: 0,
 
             // player
             player: Color::White,
 
-            // info for stoping the game
+            // mode
             mode: GameMode::Active,
-            rule_50moves: 0,
-
-            // moves and king pos (filled by self.update)
+            
+            //(filled by self.update)
+            // king pos 
             king_pos: [(7,4), (0,4)],
+            // moves and 
             w_cover: Grid::new(),
             b_cover: Grid::new(),
             legal:   Grid::new(),
+            // legal moves vec
             moves: [Vec::new(),Vec::new()],
+
+            // game history
+            history: Vec::new(),
+
         };
         game.update();
         game

@@ -12,6 +12,7 @@ pub struct GameLog {
     pub rule_50moves: u8,
 }
 
+
 impl Game {
     pub fn save(&self) -> GameLog {
         GameLog {
@@ -32,5 +33,18 @@ impl Game {
         self.mode = log.mode;
         self.rule_50moves = log.rule_50moves;
 
+    }
+
+    pub fn undo(&mut self) -> bool {
+        if !self.history.is_empty() {
+            let log = self.history.pop().unwrap();
+            self.load(log);
+            self.update();
+            true
+        } else {
+            false
+        }
+        
+        
     }
 }

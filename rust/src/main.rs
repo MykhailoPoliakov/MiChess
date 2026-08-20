@@ -1,6 +1,6 @@
 
 pub mod state;
-pub use state::{Game, play, autoplay};
+pub use state::{Game, autoplay};
 
 fn timed<F, T>(f: F) -> T 
 where F: FnOnce() -> T {
@@ -16,12 +16,14 @@ fn main() -> () {
 
     // timed(|| game.update());
 
-    timed(|| play(&mut game, ((6, 3), (5, 3)), true));
+    timed(|| game.play(((6, 3), (5, 3))));
 
-    // game.legal.print("Legal");
-    // game.w_cover.print("Cover w");
+
+    println!("Legal :\n{}", game.legal);
+    println!("Pl cover :\n{}", game.cover(game.player));
 
     // timed(|| autoplay(&mut game, 0));
 
-    println!("{}", game.board);
+    println!("Board :\n{}", game.board);
+    println!("Game history length : {}", game.history.len());
 }

@@ -32,7 +32,7 @@ fn play(start_pos: (i8,i8), end_pos: (i8,i8)) -> PyResult<bool> {
     let init = INIT.lock().unwrap(); 
     if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }
 
-    if !state::play( &mut game, (start_pos, end_pos), true) {
+    if game.play((start_pos, end_pos)) {
         return Ok(false);
     } 
     return Ok(true);

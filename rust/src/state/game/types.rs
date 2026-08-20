@@ -153,5 +153,19 @@ impl std::ops::IndexMut<Pos> for Grid {
 }
 
 
+impl fmt::Display for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for row in self.0.iter() {
+            for cell in row.iter() {
+                write!(f, "{:2} ", cell.len())?;
+            }
+            writeln!(f)?;
+        }
+        writeln!(f)?;
+        Ok(())
+    }
+}
+
+
 
 

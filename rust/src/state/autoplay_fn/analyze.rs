@@ -1,5 +1,4 @@
 use super::super::game::*;
-use super::play;
 
 use super::evaluate::{evaluate, deeper_opponent, deeper_player};
 use super::{Config, MoveInfo};
@@ -19,19 +18,16 @@ pub fn analyze(config: &Config, game: &mut Game, old_move_info: &MoveInfo, itera
 
     println!("started analyzing {}", game.player);
 
-    let log = game.save();
+    // let log = game.save();
 
     // start iteration
     let legal_moves = game.moves[game.player as usize].clone();
     for mv in legal_moves {
-        game.load(log.clone());
-        game.update();
+        // game.load(log.clone());
+        // game.update();
 
-        if play(game, mv, false) {
+        if game.play(mv) {
             *iterated += 1;
-            // print board
-            // println!("{}\nmove : {:?}\n{}", game.board, mv, old_move_info.depth + 1);
-            // thread::sleep(Duration::from_millis(100)); 
 
             // PLAYER
             if game.player != config.init_player {
@@ -40,31 +36,31 @@ pub fn analyze(config: &Config, game: &mut Game, old_move_info: &MoveInfo, itera
                 let status = status_check(&mut game.mode, config.init_player);
                 if status != 0 {
                     moves.push((mv, status));
-                    continue;
-                }
-
-                // if game continues
-                let deeper = deeper_player(game, config.init_player);
-                let value: i32;
-
-                // go deeper if needed
-                if deeper && (old_move_info.depth < config.max_depth) {
-
-                    let mut way = old_move_info.way.clone();
-                    way.push(mv);
-                    let move_info = MoveInfo {
-                        liquidity: old_move_info.liquidity,
-                        depth: old_move_info.depth + 1,
-                        way,
-                    };
-
-                    value = analyze(config, game, &move_info, iterated);
                 } else {
-                    value = evaluate(game);
-                }
 
-                // save move info
-                moves.push((mv, value));
+                    // if game continues
+                    let deeper = deeper_player(game, config.init_player);
+                    let value: i32;
+
+                    // go deeper if needed
+                    if deeper && (old_move_info.depth < config.max_depth) {
+
+                        let mut way = old_move_info.way.clone();
+                        way.push(mv);
+                        let move_info = MoveInfo {
+                            liquidity: old_move_info.liquidity,
+                            depth: old_move_info.depth + 1,
+                            way,
+                        };
+
+                        value = analyze(config, game, &move_info, iterated);
+                    } else {
+                        value = evaluate(game);
+                    }
+
+                    // save move info
+                    moves.push((mv, value));
+                }
 
             // OPONENT
             } else {
@@ -73,27 +69,29 @@ pub fn analyze(config: &Config, game: &mut Game, old_move_info: &MoveInfo, itera
                 let status = status_check(&game.mode, config.init_player);
                 if status != 0 {
                     moves.push((mv, status));
-                    continue;
-                } 
+                } else {
                 
-                let deeper = deeper_opponent(game, config.init_player);
+                    let deeper = deeper_opponent(game, config.init_player);
 
-                if deeper || moves.is_empty() {
-                    let mut way = old_move_info.way.clone();
+                    if deeper || moves.is_empty() {
+                        let mut way = old_move_info.way.clone();
 
-                    way.push(mv);
+                        way.push(mv);
 
-                    let move_info = MoveInfo {
-                        liquidity: old_move_info.liquidity,
-                        depth: old_move_info.depth + 1,
-                        way,
-                    };
+                        let move_info = MoveInfo {
+                            liquidity: old_move_info.liquidity,
+                            depth: old_move_info.depth + 1,
+                            way,
+                        };
 
-                    let value = analyze(config, game, &move_info, iterated);
-                    moves.push((mv, value));
+                        let value = analyze(config, game, &move_info, iterated);
+                        moves.push((mv, value));
+                    }
                 }
-
             }
+
+            game.undo();
+
 
             
         }
