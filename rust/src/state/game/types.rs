@@ -168,4 +168,51 @@ impl fmt::Display for Grid {
 
 
 
+#[derive(Clone, Copy)]
+pub struct BitBoard(pub u64);
 
+impl BitBoard {
+    pub fn new() -> Self {
+        BitBoard(0)
+    }
+
+    pub fn set(&mut self, pos: Pos) -> () {
+        self.0 |= 1u64 << (pos.0 * 8 + pos.1);
+    }
+
+    pub fn clear(&mut self, pos: Pos) -> () {
+        self.0 &= !(1u64 << (pos.0 * 8 + pos.1));
+    }
+
+    pub fn get(&mut self, pos: Pos) -> bool {
+        self.0 & (1u64 << (pos.0 * 8 + pos.1)) != 0
+    }
+}
+
+
+
+#[derive(Copy, Clone)]
+pub struct BitGrid(pub [[BitBoard;8];8]);
+
+impl BitGrid {
+    pub fn new() -> Self {
+        BitGrid([[BitBoard::new(); 8]; 8])
+    }
+
+    pub fn clean(&mut self) {
+        self.0 = [[BitBoard::new(); 8]; 8];
+    }
+}
+
+impl std::ops::Index<Pos> for BitGrid {
+    type Output = BitBoard;
+    fn index(&self, pos: Pos) -> &Self::Output {
+        &self.0[pos.0 as usize][pos.1 as usize]
+    }
+}
+
+impl std::ops::IndexMut<Pos> for BitGrid {
+    fn index_mut(&mut self, pos: Pos) -> &mut Self::Output {
+        &mut self.0[pos.0 as usize][pos.1 as usize]
+    }
+}
