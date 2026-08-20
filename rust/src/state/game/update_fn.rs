@@ -18,12 +18,6 @@ impl Game {
         self.b_cover.clean();
         self.legal.clean();
 
-        
-
-        // other quenue for kings, iterate through them after the other pieces
-        let mut kings_places: Vec<(i8, i8)> = Vec::new();
-
-
         // start iteration
         for pos in ALL_POS {
             match self.board[pos] {
@@ -163,7 +157,7 @@ impl Game {
                             }
                         }
                         Role::King => {
-                            kings_places.push(pos);
+                            self.king_pos[piece.color as usize] = pos;
                         }
                     }
                 }
@@ -173,7 +167,7 @@ impl Game {
 
 
         // iterate through kings (cover)
-        for &pos in &kings_places {
+        for pos in self.king_pos {
             // get variables 
             let piece = self.board[pos].unwrap();
             let pl_cover = match piece.color {Color::White => &mut self.w_cover, Color::Black => &mut self.b_cover};
@@ -187,7 +181,7 @@ impl Game {
         }
 
         // iterate through kings (game.legal)
-        for &pos in &kings_places {
+        for pos in self.king_pos {
             // get variables 
             let piece = self.board[pos].unwrap();
             let op_cover = match piece.color.opp() {Color::White => &mut self.w_cover, Color::Black => &mut self.b_cover};

@@ -19,12 +19,11 @@ pub fn play(game: &mut Game, start_pos: Pos, end_pos: Pos, save: bool) -> bool {
 
     
     // saving for back_up
-    let save_game = game.clone();
+    let log: GameLog = game.save();
 
     // MAKING THE MOVE
 
     // en passant
-    let en_passant_copy = game.en_passant;
     game.en_passant = None;
 
 
@@ -33,7 +32,7 @@ pub fn play(game: &mut Game, start_pos: Pos, end_pos: Pos, save: bool) -> bool {
         Role::Pawn => {
             // play en passant
             if game.board[(start_pos.0, end_pos.1)] == Some(Piece{color: game.player.opp(), role: Role::Pawn}) &&
-            Some(end_pos.1) == en_passant_copy {
+            Some(end_pos.1) == log.en_passant {
                 game.board[(start_pos.0, end_pos.1)] = None;
             }
             // create en passant possibility
@@ -72,7 +71,6 @@ pub fn play(game: &mut Game, start_pos: Pos, end_pos: Pos, save: bool) -> bool {
             }
             // cancel castle
             game.castle[piece.color as usize] = [false,false];
-            game.king_pos[piece.color as usize] = start_pos;
         },
         _ => {}
     }
@@ -102,7 +100,8 @@ pub fn play(game: &mut Game, start_pos: Pos, end_pos: Pos, save: bool) -> bool {
     // check if move is legal, if not loads back up 
     let king_pos: Pos = game.king_pos[game.player.opp() as usize];
     if !game.cover(game.player)[king_pos].is_empty() {
-        *game = save_game;
+        game.load(log);
+        game.update();
         return false;
     }
 

@@ -5,7 +5,14 @@ pub use types::*;
 pub use constants::*;
 
 
-#[derive(Clone, PartialEq)]
+mod log;
+pub use log::GameLog;
+
+
+
+
+
+#[derive(Clone, Copy, PartialEq)]
 pub enum GameMode {
     Active,
     Finished(Option<Color>),
@@ -37,12 +44,14 @@ pub struct Game {
     pub b_cover: Grid,
     pub legal:   Grid,
 
+    // move logs
+
 }
 
 impl Game {
     pub fn new() -> Self {
         let mut game = Game {
-            // starting board
+            // game info
             board: Board([
                 [BR, BH, BB, BQ, BK, BB, BH, BR],
                 [BP, BP, BP, BP, BP, BP, BP, BP],
@@ -53,23 +62,19 @@ impl Game {
                 [WP, WP, WP, WP, WP, WP, WP, WP],
                 [WR, WH, WB, WQ, WK, WB, WH, WR],
             ]),
-            
-            // game info
             en_passant: None,
             castle: [[true,true],[true,true]],
             check: false,
 
-            //kings
-            king_pos: [(7,4), (0,4)],
+            // player
+            player: Color::White,
 
             // info for stoping the game
             mode: GameMode::Active,
             rule_50moves: 0,
 
-            // player
-            player: Color::White, //attacker
-
-            // moves
+            // moves and king pos (filled by self.update)
+            king_pos: [(7,4), (0,4)],
             w_cover: Grid::new(),
             b_cover: Grid::new(),
             legal:   Grid::new(),

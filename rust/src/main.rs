@@ -1,14 +1,28 @@
+
 pub mod state;
-pub use state::{GameState, play, autoplay};
+pub use state::{Game, play, autoplay};
 
-
+fn timed<F, T>(f: F) -> T 
+where F: FnOnce() -> T {
+    let start = std::time::Instant::now();
+    let result = f();
+    println!("took: {:?}", start.elapsed());
+    result
+}
 
 fn main() -> () {
-    let mut gamestate = GameState::new();
 
-    gamestate.game.legal.print("Legal");
-    gamestate.game.w_cover.print("Cover w");
-    autoplay(&mut gamestate.game, 0);
+    let mut game = Game::new();
 
-    println!("{}", gamestate.game.board);
+    // timed(|| game.update());
+
+
+    timed(|| play(&mut game, (1, 3), (2, 3), true));
+
+    // game.legal.print("Legal");
+    // game.w_cover.print("Cover w");
+
+    // timed(|| autoplay(&mut game, 0));
+
+    println!("{}", game.board);
 }
