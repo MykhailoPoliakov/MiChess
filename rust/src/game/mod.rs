@@ -1,20 +1,13 @@
-mod update_fn;
+mod play;
+mod update;
+mod autoplay;
 mod types;
-mod constants;
 pub use types::*;
+mod constants;
 pub use constants::*;
 mod log;
 pub use log::GameLog;
-
-
-
-
-
-#[derive(Clone, Copy, PartialEq)]
-pub enum GameMode {
-    Active,
-    Finished(Option<Color>),
-}
+mod nnue;
 
 
 
@@ -34,16 +27,22 @@ pub struct Game {
     pub mode: GameMode,
     pub rule_50moves: u8,
     
-    // kings
+    // king pos
     pub king_pos: [Pos; 2],
 
     // moves
-    pub w_cover: Grid,
-    pub b_cover: Grid,
-    pub legal:   Grid,
+    pub legal: BitGrid,
+    pub cover: BitGrid,
+    pub cover_comb: [BitBoard;2],
+
+    // last played move
+    pub played: Option<PlayedMove>,
 
     //moves
-    pub moves: [Vec<Move>;2],
+    pub legal_moves: Vec<Move>,
+
+    // needed update pos
+    pub dirty: BitBoard,
 
     pub history: Vec<GameLog>,
 
@@ -65,11 +64,13 @@ impl Game {
             ]),
             en_passant: None,
             castle: [[true,true],[true,true]],
-            check: false,
             rule_50moves: 0,
 
             // player
             player: Color::White,
+
+            // check
+            check: false,
 
             // mode
             mode: GameMode::Active,
@@ -77,28 +78,25 @@ impl Game {
             //(filled by self.update)
             // king pos 
             king_pos: [(7,4), (0,4)],
-            // moves and 
-            w_cover: Grid::new(),
-            b_cover: Grid::new(),
-            legal:   Grid::new(),
-            // legal moves vec
-            moves: [Vec::new(),Vec::new()],
+            // moves
+            cover: BitGrid::new(),
+            legal: BitGrid::new(),
+            cover_comb: [BitBoard::new(), BitBoard::new()],
+            legal_moves: Vec::new(),
+
+            // last played move
+            played: None,
+
+            //needed update pos 
+            dirty: BitBoard::new(),
 
             // game history
             history: Vec::new(),
 
         };
+        game.dirty.set_all();
         game.update();
         game
-    }
-
-
-    // get player cover
-    pub fn cover(&self, color: Color) -> &Grid {
-        match color {
-            Color::White => &self.w_cover,
-            Color::Black => &self.b_cover
-        }
     }
 }
 

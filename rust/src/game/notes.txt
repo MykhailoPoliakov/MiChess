@@ -25,3 +25,6 @@ play ((1, 3), (2, 3)) optimized:
 
 play with no update:
     took: 1.7µs
+
+play (full) after optization:
+    took: 12µs

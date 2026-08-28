@@ -1,4 +1,7 @@
-use super::game::*;
+use super::*;
+
+mod fill_dirty;
+mod checks;
 
 
 impl Game {
@@ -7,32 +10,44 @@ impl Game {
         let (start_pos, end_pos ) = mv;
         // checks if the move is legal
         if self.mode != GameMode::Active {
+            println!("Move failed : wrong mode");
             return false;
         }
         if !self.board[start_pos].is_some_and(|p| p.color == self.player) {
+            println!("Move failed : wrong start pos");
             return false;
         }
-        if !self.legal[start_pos].contains( &end_pos ) {
+        if !self.legal[start_pos].get(end_pos) {
+            println!("Move failed : wrong end pos");
             return false;
         };
 
+
         
-        // saving for back_up
-        let log: GameLog = self.save();
+        // get dirty moves
+        self.get_dirty(mv);
+        
+        // saving history
+        self.history.push(self.save());
 
         // MAKING THE MOVE
 
         // en passant
+        let en_passant_copy = self.en_passant;
         self.en_passant = None;
 
+        // saving played move
+        let mut played = PlayedMove { mv, tp: MoveType::Basic, captured: self.board[end_pos]};
 
         let piece = self.board[start_pos].unwrap();
         match piece.role {
             Role::Pawn => {
                 // play en passant
                 if self.board[(start_pos.0, end_pos.1)] == Some(Piece{color: self.player.opp(), role: Role::Pawn}) &&
-                Some(end_pos.1) == log.en_passant {
+                Some(end_pos.1) == en_passant_copy {
                     self.board[(start_pos.0, end_pos.1)] = None;
+                    played.captured = self.board[(start_pos.0, end_pos.1)];
+                    played.tp = MoveType::EnPassant;
                 }
                 // create en passant possibility
                 if (start_pos.0 - end_pos.0).abs() == 2 {
@@ -52,19 +67,23 @@ impl Game {
                 match mv {
                     ((7,4),(7,2)) => { 
                         self.board[(7,3)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(7,0)] = None 
+                        self.board[(7,0)] = None;
+                        played.tp = MoveType::Castle(((7,3), (7,0)));
                     },
                     ((7,4),(7,6)) => { 
                         self.board[(7,5)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(7,7)] = None 
+                        self.board[(7,7)] = None;
+                        played.tp = MoveType::Castle(((7,5), (7,7)));
                     },
                     ((0,4),(0,2)) => { 
                         self.board[(0,3)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(0,0)] = None 
+                        self.board[(0,0)] = None; 
+                        played.tp = MoveType::Castle(((0,3), (0,0)));
                     },
                     ((0,4),(0,6)) => { 
                         self.board[(0,5)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(0,7)] = None 
+                        self.board[(0,7)] = None; 
+                        played.tp = MoveType::Castle(((0,5), (0,7)));
                     },
                     _  => {},
                 }
@@ -81,28 +100,32 @@ impl Game {
             self.rule_50moves += 1;
         }
 
+
         // possible promotion or basic move
         if piece.role == Role::Pawn && [0,7].contains(&end_pos.0) {
             self.board[end_pos] = Some(Piece{color: self.player, role: Role::Queen});
             self.board[start_pos] = None;
+            played.tp = MoveType::Promotion;
         } else {
             self.board[end_pos] = Some(piece);
             self.board[start_pos] = None;
         }
+
+        // saving played move
+        self.played = Some(played);
 
         // change the player
         self.player = self.player.opp();
         // update info
         self.update();
 
-
         // check if move is legal, if not loads back up 
         let king_pos: Pos = self.king_pos[self.player.opp() as usize];
-        if !self.cover(self.player)[king_pos].is_empty() {
+        if self.cover_comb[self.player as usize].get(king_pos) {
             self.undo();
+            println!("Move failed : king in danger");
             return false;
         }
-
         
         // check for wins and draws
         self.check_check();
@@ -110,95 +133,10 @@ impl Game {
         self.draw_check();
         self.no_material_check();
 
-
-        // saving move history
-        self.history.push(log);
-
         return true;
     }
-
-
-
-    // Changes : self.check
-    fn check_check(&mut self) -> () {
-        let king_pos = self.king_pos[self.player as usize];
-        self.check = !self.cover(self.player.opp())[king_pos].is_empty()
-    }
-
-
-
-    // Changes : self.mode
-    fn win_check(&mut self) -> () {
-        if !self.check {
-            return;
-        }
-
-        let king_pos = self.king_pos[self.player as usize];
-        if !self.legal[king_pos].is_empty() {
-            return;
-        }
-
-        let log = self.save();
-
-        let legal_moves = self.moves[self.player as usize].clone();
-        for mv in legal_moves {
-
-            self.board[mv.1] = self.board[mv.0];
-            self.board[mv.0] = None;
-            self.update();
-
-            if self.cover(self.player.opp())[king_pos].is_empty() {
-                self.load(log);
-                self.update();
-                return;
-            }
-
-            self.load(log.clone());
-        }
-        self.mode = GameMode::Finished(Some(self.player.opp()));
-    }
-
-
-    // Changes : self.mode
-    fn draw_check(&mut self) -> () {
-        // 50 move rule
-        if self.rule_50moves > 100 {
-            self.mode = GameMode::Finished(None);
-            return;
-        }
-        
-        // stalemate
-        if !self.check {
-            for pos in ALL_POS {
-                if self.board[pos].is_some_and(|p| p.color == self.player) &&
-                !self.legal[pos].is_empty() {
-                    return;
-                }
-            }
-            self.mode = GameMode::Finished(None);
-            return;
-        }
-    }
-
-
-    // Changes : self.mode
-    fn no_material_check(&mut self) -> () {
-
-        let mut w_material: i8 = 0;
-        let mut b_material: i8 = 0;
-
-        for place in ALL_POS {
-            match self.board[place] {
-                WB | WH => w_material += 1,
-                BB | BH => b_material += 1,
-                WK | BK | __ => (),
-                _         =>  { return }
-            }
-        }
-        if w_material == 0 && b_material <= 1 || w_material <= 1 && b_material == 0 {
-            self.mode = GameMode::Finished(None);
-            return;
-        }
-    }
-
 }
+
+
+    
+

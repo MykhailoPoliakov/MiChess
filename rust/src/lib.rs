@@ -1,5 +1,5 @@
-pub mod state;
-use state::game::Game;
+mod game;
+use game::Game;
 
 // imports for making py library
 use once_cell::sync::Lazy;
@@ -45,7 +45,7 @@ fn autoplay() -> PyResult<()> {
     let init = INIT.lock().unwrap(); 
     if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }
 
-    state::autoplay( &mut game, 1 );
+    game.autoplay();
     Ok(())
 }
 

@@ -10,6 +10,8 @@ pub struct GameLog {
     pub player: Color,
     pub mode: GameMode,
     pub rule_50moves: u8,
+    pub dirty: BitBoard,
+    pub played: Option<PlayedMove>,
 }
 
 
@@ -22,6 +24,8 @@ impl Game {
             player: self.player,
             mode: self.mode,
             rule_50moves: self.rule_50moves,
+            dirty: self.dirty,
+            played: self.played,
         }
     }
 
@@ -32,6 +36,8 @@ impl Game {
         self.player = log.player;
         self.mode = log.mode;
         self.rule_50moves = log.rule_50moves;
+        self.dirty = log.dirty;
+        self.played = log.played;
 
     }
 
