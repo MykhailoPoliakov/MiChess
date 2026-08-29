@@ -5,12 +5,12 @@ impl Game {
         // clear 
         self.legal_moves.clear();
         // fill
-        for pos in ALL_POS {
-            if self.board[pos].is_some_and(|p| p.color == self.player) {
-                let mut bits = self.legal[pos].0;
+        for start_pos in 0..64 {
+            if self.board[start_pos].is_some_and(|p| p.color == self.player) {
+                let mut bits = self.legal[start_pos].0;
                 while bits != 0 {
-                    let bit = bits.trailing_zeros() as i8;
-                    self.legal_moves.push((pos, (bit / 8, bit % 8)));
+                    let end_pos = bits.trailing_zeros() as u8;
+                    self.legal_moves.push((start_pos, end_pos));
                     bits &= bits - 1;  // clear lowest set bit
                 }
             }

@@ -4,11 +4,21 @@ mod board;
 pub use board::Board;
 mod bitgrid;
 pub use bitgrid::{BitBoard,BitGrid};
-mod pos;
 
 
+pub type Pos = u8;
 
-pub type Pos = (i8,i8);
+pub trait PosExt {
+    fn row(self) -> u8;
+    fn col(self) -> u8;
+}
+
+impl PosExt for u8 {
+    fn row(self) -> u8 { self / 8 }
+    fn col(self) -> u8 { self % 8 }
+}
+
+
 pub type Move = (Pos, Pos);
 
 

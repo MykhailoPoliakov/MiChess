@@ -29,7 +29,7 @@ impl Transformer {
     pub fn new(game: &Game, bias: FeatureVector) -> Self {
         let mut transformer = Transformer(bias, bias);
 
-        for pos in ALL_POS {
+        for pos in 0..64 {
             if let Some(piece) = game.board[pos] {
                 // for every piece
                 let features = get_features(piece, pos, game.king_pos);
@@ -76,10 +76,10 @@ impl Transformer {
 
 
 fn get_features(piece: Piece, pos: Pos, king_pos: [Pos;2]) -> [usize;2] {
-    let pos_index: usize = (pos.0 as usize + (pos.1 as usize *8) ) *12;
+    let pos_index: usize = (pos as usize + (pos as usize *8) ) *12;
 
-    let white_king_pos_index: usize = ((king_pos[0].0 as usize + (king_pos[0].1 as usize *8)) *12) *64;
-    let black_king_pos_index: usize = ((king_pos[1].0 as usize + (king_pos[1].1 as usize *8)) *12) *64;
+    let white_king_pos_index: usize = ((king_pos[0] as usize + (king_pos[0] as usize *8)) *12) *64;
+    let black_king_pos_index: usize = ((king_pos[1] as usize + (king_pos[1] as usize *8)) *12) *64;
 
     return [piece.color as usize + (piece.role as usize)*2 + pos_index + white_king_pos_index,
         piece.color as usize + (piece.role as usize)*2 + pos_index + black_king_pos_index]

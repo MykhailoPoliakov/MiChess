@@ -5,8 +5,8 @@ mod types;
 pub use types::*;
 mod constants;
 pub use constants::*;
-mod log;
-pub use log::GameLog;
+mod undo;
+pub use undo::GameLog;
 mod nnue;
 
 
@@ -16,7 +16,7 @@ pub struct Game {
 
     // game info
     pub board: Board,
-    pub en_passant: Option<i8>,
+    pub en_passant: Option<u8>,
     pub castle: [[bool; 2]; 2],
     pub check: bool,
 
@@ -51,16 +51,16 @@ pub struct Game {
 impl Game {
     pub fn new() -> Self {
         let mut game = Game {
-            // game info
+            // main game info
             board: Board([
-                [BR, BH, BB, BQ, BK, BB, BH, BR],
-                [BP, BP, BP, BP, BP, BP, BP, BP],
-                [__, __, __, __, __, __, __, __],
-                [__, __, __, __, __, __, __, __],
-                [__, __, __, __, __, __, __, __],
-                [__, __, __, __, __, __, __, __],
-                [WP, WP, WP, WP, WP, WP, WP, WP],
-                [WR, WH, WB, WQ, WK, WB, WH, WR],
+                BR, BH, BB, BQ, BK, BB, BH, BR,
+                BP, BP, BP, BP, BP, BP, BP, BP,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                WP, WP, WP, WP, WP, WP, WP, WP,
+                WR, WH, WB, WQ, WK, WB, WH, WR,
             ]),
             en_passant: None,
             castle: [[true,true],[true,true]],
@@ -77,7 +77,7 @@ impl Game {
             
             //(filled by self.update)
             // king pos 
-            king_pos: [(7,4), (0,4)],
+            king_pos: [7*8 + 4, 0*8 + 4],
             // moves
             cover: BitGrid::new(),
             legal: BitGrid::new(),
@@ -87,15 +87,14 @@ impl Game {
             // last played move
             played: None,
 
-            //needed update pos 
+            // needed update pos 
             dirty: BitBoard::new(),
 
             // game history
             history: Vec::new(),
 
         };
-        game.dirty.set_all();
-        game.update();
+        game.update(BitBoard(u64::MAX));
         game
     }
 }

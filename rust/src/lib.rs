@@ -27,7 +27,7 @@ fn init() -> PyResult<()> {
 
 /// Trys the given move, if it is legal, plays it and returns 'true', otherwise returns 'false'.
 #[pyfunction]
-fn play(start_pos: (i8,i8), end_pos: (i8,i8)) -> PyResult<bool> {
+fn play(start_pos: u8, end_pos: u8) -> PyResult<bool> {
     let mut game = GAME.lock().unwrap();
     let init = INIT.lock().unwrap(); 
     if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }

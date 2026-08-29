@@ -5,7 +5,7 @@ pub use super::{Game, GameMode};
 #[derive(Clone)]
 pub struct GameLog {
     pub board: Board,
-    pub en_passant: Option<i8>,
+    pub en_passant: Option<u8>,
     pub castle: [[bool;2];2],
     pub player: Color,
     pub mode: GameMode,
@@ -43,9 +43,11 @@ impl Game {
 
     pub fn undo(&mut self) -> bool {
         if !self.history.is_empty() {
+            let current_dirty = self.dirty;
             let log = self.history.pop().unwrap();
             self.load(log);
-            self.update();
+            self.update(current_dirty);
+
             true
         } else {
             false

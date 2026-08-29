@@ -4,12 +4,12 @@ use super::*;
 pub struct BitBoard(pub u64);
 
 impl BitBoard {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         BitBoard(0)
     }
 
     pub fn set(&mut self, pos: Pos) -> () {
-        self.0 |= 1u64 << (pos.0 * 8 + pos.1);
+        self.0 |= 1u64 << pos;
     }
 
     pub fn set_all(&mut self) -> () {
@@ -17,11 +17,11 @@ impl BitBoard {
     }
 
     pub fn clear(&mut self, pos: Pos) -> () {
-        self.0 &= !(1u64 << (pos.0 * 8 + pos.1));
+        self.0 &= !(1u64 << pos);
     }
 
     pub fn get(&self, pos: Pos) -> bool {
-        self.0 & (1u64 << (pos.0 * 8 + pos.1)) != 0
+        self.0 & (1u64 << pos) != 0
     }
 
     pub fn is_empty(&self) -> bool {
@@ -38,15 +38,11 @@ impl BitBoard {
             if bits == 0 {
                 None
             } else {
-                let pos = bits.trailing_zeros() as i8;
+                let pos = bits.trailing_zeros() as u8;
                 bits &= bits - 1;
-                Some((pos / 8, pos % 8))
+                Some(pos)
             }
         })
-    }
-
-    pub fn contains(&self, pos: Pos) -> bool {
-        self.0 & (1u64 << (pos.0 * 8 + pos.1)) != 0
     }
 }
 
@@ -72,25 +68,26 @@ impl std::fmt::Display for BitBoard {
 
 
 
+
 #[derive(Copy, Clone)]
-pub struct BitGrid(pub [[BitBoard;8];8]);
+pub struct BitGrid(pub [BitBoard; 64]);
 
 impl BitGrid {
-    pub fn new() -> Self {
-        BitGrid([[BitBoard::new(); 8]; 8])
+    pub const fn new() -> Self {
+        BitGrid([BitBoard::new(); 64])
     }
 }
 
 impl std::ops::Index<Pos> for BitGrid {
     type Output = BitBoard;
     fn index(&self, pos: Pos) -> &Self::Output {
-        &self.0[pos.0 as usize][pos.1 as usize]
+        &self.0[pos as usize]
     }
 }
 
 impl std::ops::IndexMut<Pos> for BitGrid {
     fn index_mut(&mut self, pos: Pos) -> &mut Self::Output {
-        &mut self.0[pos.0 as usize][pos.1 as usize]
+        &mut self.0[pos as usize]
     }
 }
 

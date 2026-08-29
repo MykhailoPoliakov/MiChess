@@ -38,16 +38,10 @@ impl Game {
 
 
     // Changes : self.mode
-    pub(super) fn draw_check(&mut self) -> () {
-        // 50 move rule
-        if self.rule_50moves > 100 {
-            self.mode = GameMode::Finished(None);
-            return;
-        }
-        
+    pub(super) fn stalemate_check(&mut self) -> () {
         // stalemate
         if !self.check {
-            for pos in ALL_POS {
+            for pos in 0..64 {
                 if self.board[pos].is_some_and(|p| p.color == self.player) &&
                 !self.legal[pos].is_empty() {
                     return;
@@ -62,15 +56,15 @@ impl Game {
     // Changes : self.mode
     pub(super) fn no_material_check(&mut self) -> () {
 
-        let mut w_material: i8 = 0;
-        let mut b_material: i8 = 0;
+        let mut w_material: u8 = 0;
+        let mut b_material: u8 = 0;
 
-        for place in ALL_POS {
-            match self.board[place] {
+        for pos in 0..64 {
+            match self.board[pos] {
                 WB | WH => w_material += 1,
                 BB | BH => b_material += 1,
                 WK | BK | __ => (),
-                _         =>  { return }
+                _         =>  { return; }
             }
         }
         if w_material == 0 && b_material <= 1 || w_material <= 1 && b_material == 0 {
@@ -79,6 +73,21 @@ impl Game {
         }
     }
 
+    pub(super) fn rule_50_check(&mut self) {
+        // reset
+        if let Some(played) = self.played {
+            if self.board[played.mv.1].is_some_and( |p| p.role == Role::Pawn) && played.captured.is_some() {
+                self.rule_50moves = 0;
+            }
+        }
+        // add move
+        self.rule_50moves += 1;
 
+        // if over the limit
+        if self.rule_50moves >= 100 {
+            self.mode = GameMode::Finished(None);
+            return;
+        }
+    }
 
 }

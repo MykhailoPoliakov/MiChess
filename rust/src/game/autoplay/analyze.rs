@@ -14,7 +14,7 @@ const NINF: i32 = -10_000_000;
 
 pub fn analyze(config: &Config, game: &mut Game, old_move_info: &MoveInfo, iterated: &mut i32) -> i32 {
 
-    let mut moves: Vec<( ((i8,i8),(i8,i8)) , i32 )> = Vec::new(); 
+    let mut moves: Vec<( Move , i32 )> = Vec::new(); 
 
     // println!("started analyzing {}", game.player);
 

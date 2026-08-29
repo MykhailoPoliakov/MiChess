@@ -10,19 +10,31 @@ where F: FnOnce() -> T {
     result
 }
 
+fn play(game: &mut Game, mv: ((u8, u8),(u8, u8))) -> () {
+   timed(|| game.play(((mv.0.0*8 + mv.0.1), (mv.1.0*8 + mv.1.1)))); 
+}
+
 
 fn main() -> () {
 
     let mut game = Game::new();
 
-    timed(|| game.play(((6,0), (4,0))));
-    // timed(|| game.undo());
-    // timed(|| game.play(((6,4), (4,4))));
+    // timed(|| game.play((52, 36))); // e2-e4
+    // timed(|| game.play((12, 28))); // e7-e5
+    // timed(|| game.play((62, 45))); // g1-f3
+    // timed(|| game.play((1, 18)));  // b8-c6
+    // timed(|| game.play((61, 34))); // f1-c4
+    // timed(|| game.play((5, 26)));  // f8-c5
     
-    // timed(|| game.play(((1,4), (3,4))));
-    // timed(|| game.play(((7,6), (5,5))));
-    // timed(|| game.play(((0,1), (2,2))));
-    // timed(|| game.play(((7,5), (4,2))));
+    // timed(|| game.undo());
+    // timed(|| game.undo());
+    // timed(|| game.undo());
+
+    // timed(|| game.play((1, 18)));  // b8-c6
+    // timed(|| game.play((61, 34))); // f1-c4
+    // timed(|| game.play((5, 26)));  // f8-c5
+
+    play(&mut game, ((6, 4), (4, 4)));
 
     // timed(|| game.autoplay());
 

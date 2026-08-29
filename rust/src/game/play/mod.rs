@@ -1,6 +1,6 @@
 use super::*;
 
-mod fill_dirty;
+mod get_dirty;
 mod checks;
 
 
@@ -25,7 +25,7 @@ impl Game {
 
         
         // get dirty moves
-        self.get_dirty(mv);
+        
         
         // saving history
         self.history.push(self.save());
@@ -43,20 +43,25 @@ impl Game {
         match piece.role {
             Role::Pawn => {
                 // play en passant
-                if self.board[(start_pos.0, end_pos.1)] == Some(Piece{color: self.player.opp(), role: Role::Pawn}) &&
-                Some(end_pos.1) == en_passant_copy {
-                    self.board[(start_pos.0, end_pos.1)] = None;
-                    played.captured = self.board[(start_pos.0, end_pos.1)];
-                    played.tp = MoveType::EnPassant;
+                if Some(end_pos.col()) == en_passant_copy {
+                    let op_pawn_pos = start_pos.row()*8 + end_pos.col();
+                    if self.board[op_pawn_pos] == Some(Piece{color: self.player.opp(), role: Role::Pawn}) {
+                        // save move data
+                        played.captured = self.board[op_pawn_pos];
+                        played.tp = MoveType::EnPassant;
+                        // capture opp pawn
+                        self.board[op_pawn_pos] = None;
+                    }
                 }
-                // create en passant possibility
-                if (start_pos.0 - end_pos.0).abs() == 2 {
-                    self.en_passant = Some(start_pos.1);
+
+                // set en passant
+                if (start_pos.row() as i8 - end_pos.row() as i8).abs() == 2 {
+                    self.en_passant = Some(start_pos.col());
                 }
             },
             Role::Rook => {
                 // cancel castle
-                match start_pos.1 {
+                match start_pos.col() {
                     0 => self.castle[piece.color as usize][0] = false,
                     7 => self.castle[piece.color as usize][1] = false,
                     _     => {},
@@ -64,45 +69,33 @@ impl Game {
             },
             Role::King => {
                 // make castle
-                match mv {
-                    ((7,4),(7,2)) => { 
-                        self.board[(7,3)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(7,0)] = None;
-                        played.tp = MoveType::Castle(((7,3), (7,0)));
-                    },
-                    ((7,4),(7,6)) => { 
-                        self.board[(7,5)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(7,7)] = None;
-                        played.tp = MoveType::Castle(((7,5), (7,7)));
-                    },
-                    ((0,4),(0,2)) => { 
-                        self.board[(0,3)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(0,0)] = None; 
-                        played.tp = MoveType::Castle(((0,3), (0,0)));
-                    },
-                    ((0,4),(0,6)) => { 
-                        self.board[(0,5)] = Some(Piece{color: self.player, role: Role::Rook}); 
-                        self.board[(0,7)] = None; 
-                        played.tp = MoveType::Castle(((0,5), (0,7)));
-                    },
-                    _  => {},
+                let row = match piece.color {Color::White => 7, Color::Black => 0};
+                if start_pos.row() == row && end_pos.row() == row {
+                    match (start_pos.col(), end_pos.col()) {
+                        (4,2) => { 
+                            self.board[row*8 + 3] = Some(Piece{color: self.player, role: Role::Rook}); 
+                            self.board[row*8 + 0] = None;
+                            // save move data
+                            played.tp = MoveType::Castle((row*8 + 0, row*8 + 3));
+                        },
+                        (4,6) => { 
+                            self.board[row*8 + 5] = Some(Piece{color: self.player, role: Role::Rook}); 
+                            self.board[row*8 + 7] = None;
+                            // save move data
+                            played.tp = MoveType::Castle((row*8 + 7, row*8 + 5));
+                        },
+                        _  => {},
+                    }
                 }
                 // cancel castle
-                self.castle[piece.color as usize] = [false,false];
+                self.castle[piece.color as usize] = [false, false];
             },
             _ => {}
         }
 
-        // 50 move rule
-        if self.board[end_pos].is_some() || piece.role == Role::Pawn {
-            self.rule_50moves = 0;
-        } else {
-            self.rule_50moves += 1;
-        }
-
 
         // possible promotion or basic move
-        if piece.role == Role::Pawn && [0,7].contains(&end_pos.0) {
+        if piece.role == Role::Pawn && [0,7].contains(&end_pos) {
             self.board[end_pos] = Some(Piece{color: self.player, role: Role::Queen});
             self.board[start_pos] = None;
             played.tp = MoveType::Promotion;
@@ -116,8 +109,10 @@ impl Game {
 
         // change the player
         self.player = self.player.opp();
+
         // update info
-        self.update();
+        self.get_dirty();
+        self.update(self.dirty);
 
         // check if move is legal, if not loads back up 
         let king_pos: Pos = self.king_pos[self.player.opp() as usize];
@@ -130,8 +125,10 @@ impl Game {
         // check for wins and draws
         self.check_check();
         self.win_check();
-        self.draw_check();
+        self.stalemate_check();
         self.no_material_check();
+        self.rule_50_check();
+        
 
         return true;
     }
