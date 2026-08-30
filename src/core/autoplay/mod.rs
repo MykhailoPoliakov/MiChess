@@ -39,7 +39,7 @@ impl Game {
                 let mut iterated = 0;
                 
                 let info = MoveInfo { liquidity: 2, depth: 1, way: vec![mv] };
-                let value = analyze(&config, game, &info, &mut iterated);
+                let value = 0; //analyze(&config, game, &info, &mut iterated);
 
                 moves_iterated.push(iterated);
 
@@ -53,7 +53,6 @@ impl Game {
         self.play(mv);
 
         // console ouput
-
         println!("\nIteratrions done : {:?}", moves_iterated);
         println!("\n---Bot makes move!---\nchosen move: {mv:?}\n");
     }
@@ -66,7 +65,7 @@ impl Game {
 
 
 
-fn _print_visual_horisontal() {
+fn print_visual_horisontal() {
     println!("\n          Autoplay");
     println!("{}{}{}", "┌───","───┬───".repeat(18), "───┐" );
 }

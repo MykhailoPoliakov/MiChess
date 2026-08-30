@@ -1,14 +1,7 @@
 
-pub mod game;
-pub use game::Game;
+pub mod core;
+pub use core::{Game, timed};
 
-fn timed<F, T>(f: F) -> T 
-where F: FnOnce() -> T {
-    let start = std::time::Instant::now();
-    let result = f();
-    println!("took: {:?}", start.elapsed());
-    result
-}
 
 fn play(game: &mut Game, mv: ((u8, u8),(u8, u8))) -> () {
    timed(|| game.play(((mv.0.0*8 + mv.0.1), (mv.1.0*8 + mv.1.1)))); 
@@ -35,8 +28,9 @@ fn main() -> () {
     // timed(|| game.play((5, 26)));  // f8-c5
 
     play(&mut game, ((6, 4), (4, 4)));
+    play(&mut game, ((1, 4), (3, 4)));
 
-    // timed(|| game.autoplay());
+    timed(|| game.autoplay());
 
 
 

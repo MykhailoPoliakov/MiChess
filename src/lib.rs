@@ -1,5 +1,7 @@
-mod game;
-use game::Game;
+mod core;
+use core::Game;
+mod api;
+use api::{get_py_state, PyState};
 
 // imports for making py library
 use once_cell::sync::Lazy;
@@ -25,26 +27,25 @@ fn init() -> PyResult<()> {
     Ok(())
 }
 
+
 /// Trys the given move, if it is legal, plays it and returns 'true', otherwise returns 'false'.
 #[pyfunction]
 fn play(start_pos: u8, end_pos: u8) -> PyResult<bool> {
-    let mut game = GAME.lock().unwrap();
     let init = INIT.lock().unwrap(); 
     if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }
 
-    if game.play((start_pos, end_pos)) {
-        return Ok(false);
-    } 
-    return Ok(true);
+    let mut game = GAME.lock().unwrap();
+    return Ok(game.play((start_pos, end_pos)));
 }
+
 
 /// Plays the best move. 
 #[pyfunction]
 fn autoplay() -> PyResult<()> {
-    let mut game = GAME.lock().unwrap();
     let init = INIT.lock().unwrap(); 
     if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }
 
+    let mut game = GAME.lock().unwrap();
     game.autoplay();
     Ok(())
 }
@@ -52,17 +53,17 @@ fn autoplay() -> PyResult<()> {
 
 /// Returns game info
 #[pyfunction]
-fn get_state() -> PyResult<()> {
-    Ok(())
+fn state() -> PyResult<PyState> {
+    let init = INIT.lock().unwrap(); 
+    if *init == false { return Err(pyo3::exceptions::PyRuntimeError::new_err("run init()")); }
+
+    let game = GAME.lock().unwrap();
+    Ok(get_py_state(&game))
 }
 
 
 
 /// Chess game-engine
-/// 
-/// Call michess.init() to start the game.
-/// Call michess.play(start_pos, end_pos) or michess.autoplay to make a move.
-/// 
 #[pymodule]
 fn michess(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // control functions
@@ -70,7 +71,7 @@ fn michess(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(play, m)?)?;
     m.add_function(wrap_pyfunction!(autoplay, m)?)?;
 
-    // return game info functions
-    m.add_function(wrap_pyfunction!(get_state, m)?)?;
+    // get info
+    m.add_function(wrap_pyfunction!(state, m)?)?;
     Ok(())
 }

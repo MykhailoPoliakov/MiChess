@@ -1,5 +1,4 @@
 import pygame
-import sys, os
 from pathlib import Path
 
 class Output:
@@ -27,14 +26,14 @@ class Output:
     """ Start mode """
 
     def print_start_screen(self) -> None:
-        pygame.draw.rect(self.screen, (255, 255, 255), (660, 300, 600, 285) )
-        pygame.draw.rect(self.screen, (255, 255, 255), (660, 615, 600, 130) )
+        pygame.draw.rect(self.screen, (255, 255, 255), (660, 300, 600, 285))
+        pygame.draw.rect(self.screen, (255, 255, 255), (660, 615, 600, 130))
 
-        pygame.draw.rect(self.screen, (255, 0, 0), (850, 320, 100, 100) )
-        pygame.draw.rect(self.screen, (255, 0, 0), (970, 320, 100, 100) )
+        pygame.draw.rect(self.screen, (255, 0, 0), (850, 320, 100, 100))
+        pygame.draw.rect(self.screen, (255, 0, 0), (970, 320, 100, 100))
 
-        pygame.draw.rect(self.screen, (255, 0, 0), (850, 460, 100, 100) )
-        pygame.draw.rect(self.screen, (255, 0, 0), (970, 460, 100, 100) )
+        pygame.draw.rect(self.screen, (255, 0, 0), (850, 460, 100, 100))
+        pygame.draw.rect(self.screen, (255, 0, 0), (970, 460, 100, 100))
 
 
     """ Game mode """

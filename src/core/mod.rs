@@ -3,8 +3,6 @@ mod update;
 mod autoplay;
 mod types;
 pub use types::*;
-mod constants;
-pub use constants::*;
 mod undo;
 pub use undo::GameLog;
 mod nnue;
@@ -18,14 +16,16 @@ pub struct Game {
     pub board: Board,
     pub en_passant: Option<u8>,
     pub castle: [[bool; 2]; 2],
+    pub rule_50moves: u8,
+
+    // check
     pub check: bool,
 
     // players
     pub player: Color,
     
-    // info for stoping the game
+    // mode
     pub mode: GameMode,
-    pub rule_50moves: u8,
     
     // king pos
     pub king_pos: [Pos; 2],
@@ -34,16 +34,13 @@ pub struct Game {
     pub legal: BitGrid,
     pub cover: BitGrid,
     pub cover_comb: [BitBoard;2],
-
-    // last played move
-    pub played: Option<PlayedMove>,
-
-    //moves
     pub legal_moves: Vec<Move>,
 
-    // needed update pos
+    // for dynamic update
+    pub played: Option<PlayedMove>,
     pub dirty: BitBoard,
 
+    // history
     pub history: Vec<GameLog>,
 
 }
@@ -84,10 +81,8 @@ impl Game {
             cover_comb: [BitBoard::new(), BitBoard::new()],
             legal_moves: Vec::new(),
 
-            // last played move
-            played: None,
-
-            // needed update pos 
+            // dynamic update
+            played: None, 
             dirty: BitBoard::new(),
 
             // game history
@@ -99,3 +94,12 @@ impl Game {
     }
 }
 
+
+
+pub fn timed<F, T>(f: F) -> T 
+where F: FnOnce() -> T {
+    let start = std::time::Instant::now();
+    let result = f();
+    println!("took: {:?}", start.elapsed());
+    result
+}

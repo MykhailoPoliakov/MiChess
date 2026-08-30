@@ -70,15 +70,15 @@ impl Game {
             Role::King => {
                 // make castle
                 let row = match piece.color {Color::White => 7, Color::Black => 0};
-                if start_pos.row() == row && end_pos.row() == row {
-                    match (start_pos.col(), end_pos.col()) {
-                        (4,2) => { 
+                if start_pos.row() == row && end_pos.row() == row && start_pos.col() == 4 {
+                    match end_pos.col() {
+                        2 => { 
                             self.board[row*8 + 3] = Some(Piece{color: self.player, role: Role::Rook}); 
                             self.board[row*8 + 0] = None;
                             // save move data
                             played.tp = MoveType::Castle((row*8 + 0, row*8 + 3));
                         },
-                        (4,6) => { 
+                        6 => { 
                             self.board[row*8 + 5] = Some(Piece{color: self.player, role: Role::Rook}); 
                             self.board[row*8 + 7] = None;
                             // save move data

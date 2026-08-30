@@ -1,9 +1,11 @@
 mod piece;
-pub use piece::{Color,Role,Piece};
+pub use piece::*;
 mod board;
 pub use board::Board;
 mod bitgrid;
-pub use bitgrid::{BitBoard,BitGrid};
+pub use bitgrid::BitGrid;
+mod bitboard;
+pub use bitboard::BitBoard;
 
 
 pub type Pos = u8;

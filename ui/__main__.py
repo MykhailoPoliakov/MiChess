@@ -1,4 +1,5 @@
 import pygame
+from enum import Enum
 
 # rust brain library
 import michess as mc
@@ -7,17 +8,17 @@ import michess as mc
 from input_class import Input
 from output_class import Output
 
+class Mode(Enum):
+    START = 0
+    GAME  = 1
+
+
 class Settings:
     def __init__(self):
         # game
-        self.mode: str = 's'
-        self.bot: str  = ''
-        self.side: str = ''
-        self.move_made: bool = False
-
-        # history
-        self.history_board = None
-        self.history_index = 0
+        self.mode: Mode = Mode.START
+        self.bot:  str = None
+        self.side: str = None
 
 
 def main():
@@ -49,7 +50,7 @@ def main():
 
         match sett.mode:
 
-            case 's':
+            case Mode.START:
                 # start
                 if inp.start:
                     sett.side, bot_mode = inp.start
@@ -61,7 +62,7 @@ def main():
                     inp.start = []
 
 
-            case 'g':
+            case Mode.GAME:
                 # person makes move
                 if len(inp.action) == 2:
                     mc.play(*inp.action)
