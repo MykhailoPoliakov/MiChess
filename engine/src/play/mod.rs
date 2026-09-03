@@ -7,7 +7,7 @@ mod checks;
 impl Game {
     // makes a move, returns bool
     pub fn play(&mut self, mv: Move) -> bool {
-        let (start_pos, end_pos ) = mv;
+        let (start_pos, end_pos) = mv;
         // checks if the move is legal
         if self.mode != GameMode::Active {
             println!("Move failed : wrong mode");
@@ -21,10 +21,6 @@ impl Game {
             println!("Move failed : wrong end pos");
             return false;
         };
-
-
-        
-        // get dirty moves
         
         
         // saving history
@@ -37,7 +33,7 @@ impl Game {
         self.en_passant = None;
 
         // saving played move
-        let mut played = PlayedMove { mv, tp: MoveType::Basic, captured: self.board[end_pos]};
+        let mut played = PlayedMove {mv, tp: MoveType::Basic, captured: self.board[end_pos]};
 
         let piece = self.board[start_pos].unwrap();
         match piece.role {
@@ -95,7 +91,7 @@ impl Game {
 
 
         // possible promotion or basic move
-        if piece.role == Role::Pawn && [0,7].contains(&end_pos) {
+        if piece.role == Role::Pawn && (end_pos < 8 || end_pos >= 56) {
             self.board[end_pos] = Some(Piece{color: self.player, role: Role::Queen});
             self.board[start_pos] = None;
             played.tp = MoveType::Promotion;

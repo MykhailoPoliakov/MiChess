@@ -24,14 +24,17 @@ impl Game {
         let legal_moves = self.legal_moves.clone();
         for mv in legal_moves {
 
-            self.play(mv);
+            if self.play(mv) {
 
-            if !self.cover_comb[self.player.opp() as usize].get(king_pos) {
+                if !self.cover_comb[self.player.opp() as usize].get(king_pos) {
+                    self.undo();
+                    println!("win undo");
+                    return;
+                }
+
                 self.undo();
-                return;
+                println!("win undo");
             }
-
-            self.undo();
         }
         self.mode = GameMode::Finished(Some(self.player.opp()));
     }

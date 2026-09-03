@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 engine = { path = "../engine" }
 eframe = "0.36.1"
+image = "0.25.10"
