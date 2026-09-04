@@ -1,105 +1,80 @@
 use super::*;
 
-
-const WEIGHTS: [[f32; 128]; 10] = [
-    [0.1; 128],
-    [0.2; 128],
-    [0.3; 128],
-    [0.4; 128],
-    [0.5; 128],
-    [0.6; 128],
-    [0.7; 128],
-    [0.8; 128],
-    [0.9; 128],
-    [1.0; 128],
-];
-
-
-
-type FeatureVector = [f32; 128];
-
-
-
-
-
-// temporary holder of already done calculations on first hidden layer
-pub struct Transformer (FeatureVector, FeatureVector);
-
-impl Transformer {
-    pub fn new(game: &Game, bias: FeatureVector) -> Self {
-        let mut transformer = Transformer(bias, bias);
-
-        for pos in 0..64 {
-            if let Some(piece) = game.board[pos] {
-                // for every piece
-                let features = get_features(piece, pos, game.king_pos);
-                transformer.add(features);
-            }
-        }
-        transformer
-    }
-
-    pub fn play(&mut self, mv: Move, game: &Game) -> () {
-        if game.board[mv.1].unwrap().role == Role::King {
-            return
-        }
-
-        // self.add(get_features(piece, pos, game.king_pos));
-
-    }
-
-    // add a feature
-    fn add(&mut self, features: [usize;2]) -> () {
-        // get weights
-        let white_feature_vec = &WEIGHTS[features[0]];
-        let black_feature_vec = &WEIGHTS[features[1]];
-
-        for i in 0..128 {
-            self.0[i] += white_feature_vec[i];
-            self.1[i] += black_feature_vec[i];
-        }
-    }
-
-    // remove a feature
-    fn remove(&mut self, features: [usize;2]) -> () {
-       // get weights
-        let white_feature_vec = &WEIGHTS[features[0]];
-        let black_feature_vec = &WEIGHTS[features[1]];
-
-        for i in 0..128 {
-            self.0[i] -= white_feature_vec[i];
-            self.1[i] -= black_feature_vec[i];
-        }
-    }
-}
-
-
-
-fn get_features(piece: Piece, pos: Pos, king_pos: [Pos;2]) -> [usize;2] {
-    let pos_index: usize = (pos as usize + (pos as usize *8) ) *12;
-
-    let white_king_pos_index: usize = ((king_pos[0] as usize + (king_pos[0] as usize *8)) *12) *64;
-    let black_king_pos_index: usize = ((king_pos[1] as usize + (king_pos[1] as usize *8)) *12) *64;
-
-    return [piece.color as usize + (piece.role as usize)*2 + pos_index + white_king_pos_index,
-        piece.color as usize + (piece.role as usize)*2 + pos_index + black_king_pos_index]
-}
+mod transformer;
+use transformer::Transformer;
 
 
 
 
 pub struct Nnue {
-    feature_weights: Vec<i16>,
-    feature_bias: Vec<i16>,
+    // transformer: feature -> accumulator
+    pub feature_weights: [[f32; 128]; 49163],
+    pub feature_bias:    [f32; 128],
 
-    hidden0_weights: Vec<i16>,
-    hidden0_bias: Vec<i16>,
+    // 256 -> 32
+    pub hidden0_weights: [f32; 32 * 256],
+    pub hidden0_bias:    [f32; 32],
 
-    hidden1_weights: Vec<i16>,
-    hidden1_bias: Vec<i16>,
+    // 32 -> 32
+    pub hidden1_weights: [f32; 32 * 32],
+    pub hidden1_bias:    [f32; 32],
 
-    output_weights: Vec<i16>,
-    output_bias: i32,
+    // 32 -> 1
+    pub output_weights:  [f32; 32],
+    pub output_bias:     f32,
+}
+
+
+
+impl Nnue {
+    pub fn eval(&self, transformer: &Transformer, active: Color) -> i32 {
+
+        // get one input [f32; 256]
+        let mut input: [f32; 256] = [0.0; 256];
+        let (active, inactive) = match active {
+            Color::White => (&transformer.0, &transformer.1),
+            Color::Black => (&transformer.1, &transformer.0),
+        };
+        for i in 0..128 {
+            input[i]       = active[i].clamp(0.0, 1.0);
+            input[i + 128] = inactive[i].clamp(0.0, 1.0);
+        }
+
+
+
+        // first hidden layer [f32; 256] -> [f32; 32]
+        let mut h1: [f32; 32] = [0.0; 32];
+        for i in 0..32 {
+            h1[i] = self.hidden0_bias[i] as f32;
+            for j in 0..256 {
+                h1[i] += input[j] * self.hidden0_weights[i * 256 + j] as f32;
+            }
+            h1[i] = h1[i].clamp(0.0, 1.0);
+        }
+
+
+
+        // second hidden layer [f32; 32] -> [f32; 32]
+        let mut h2: [f32; 32] = [0.0; 32];
+        for i in 0..32 {
+            h2[i] = self.hidden1_bias[i] as f32;
+            for j in 0..32 {
+                h2[i] += h1[j] * self.hidden1_weights[i * 256 + j] as f32;
+            }
+            h2[i] = h2[i].clamp(0.0, 1.0);
+        }
+
+
+        // output layer [f32; 32] -> f32
+        let mut output = self.output_bias as f32;
+        for i in 0..32 {
+            output += h2[i] * self.output_weights[i] as f32;
+        }
+
+
+
+        output as i32
+    }
 }
 
 

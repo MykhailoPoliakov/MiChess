@@ -32,7 +32,7 @@ pub struct PlayedMove {
 
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MoveType {
     Basic,
     Promotion,

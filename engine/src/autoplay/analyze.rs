@@ -23,8 +23,6 @@ pub fn analyze(config: &Config, game: &mut Game, old_move_info: &MoveInfo, itera
     // start iteration
     let legal_moves = game.legal_moves.clone();
     for mv in legal_moves {
-        // game.load(log.clone());
-        // game.update();
 
         if game.play(mv) {
             *iterated += 1;
