@@ -10,7 +10,12 @@ impl App {
         // autoplay
         if ui.input(|i| i.key_pressed(egui::Key::Space)) {
             println!("{}", self.game);
-            self.game.autoplay();
+            if self.game.state.mode == GameMode::Active {
+                timed(|| self.game.autoplay());
+            } else {
+                println!("{:?}", self.game.state.mode);
+            }
+            
         }
 
         // print game
@@ -24,6 +29,13 @@ impl App {
 
         if ui.input(|i| i.key_pressed(egui::Key::E)) {
             println!("{}", self.game.eval());
+        }
+         
+
+        if ui.input(|i| i.key_pressed(egui::Key::D)) {
+            for i in [[55,39], [11,19], [52,36], [6,21], [36,28], [14,30], [39,30]] {
+                self.game.play((i[0], i[1]));
+            }
         }
 
     }
@@ -91,7 +103,8 @@ impl App {
                         let chess_pos = ((pos.y / self.square_size) as u8)*8 + (pos.x / self.square_size) as u8;
                         
                         if Some(chess_pos) != self.selected {
-                            if timed(|| self.game.play((selected, chess_pos)).is_ok()) {
+                            if self.game.validate((selected, chess_pos)).is_ok() {
+                                timed(|| self.game.play((selected, chess_pos)));
                                 self.selected = None;
                             }
                         }

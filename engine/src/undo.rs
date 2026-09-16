@@ -1,18 +1,18 @@
 use super::*;
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GameLog {
     pub state: GameState,
-    pub played: LastPlayed,
+    pub played: Option<PlayedMove>,
 }
 
 
 impl Game {
     pub fn save(&self) -> GameLog {
         GameLog {
-            state: self.state.clone(),
-            played: self.played.clone(),
+            state: self.state,
+            played: self.played,
         }
     }
 
@@ -28,9 +28,9 @@ impl Game {
         
         // update cache with current dirty, undo transformer with current played
         self.update();
-        self.transformer.undo(&NNUE, &self.state.board, self.cache.king_pos, self.played.mv.unwrap());
+        // self.transformer.undo(&NNUE, &self.state.board, self.cache.king_pos, self.played.mv.unwrap());
 
-        // update dirty and last_mv
+        // played
         self.played = log.played;
 
         

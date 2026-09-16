@@ -78,14 +78,13 @@ impl App {
 
         // render selected
         if let Some(selected) = self.selected {
-            for row in 0..8 {
-                for col in 0..8 {
+            for &(start, end) in &self.game.cache.legal_moves {
+                if start == selected {
+                    let row = end / 8;
+                    let col = end % 8;
                     let x = col as f32 * self.square_size;
                     let y = row as f32 * self.square_size;
-
-                    if self.game.cache.legal[selected].get(row*8 + col) {
-                        self.render_legal(&painter,egui::pos2(x, y), self.square_size);
-                    }
+                    self.render_legal(&painter, egui::pos2(x, y), self.square_size);
                 }
             }
         }

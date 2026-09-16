@@ -4,12 +4,18 @@ mod rook;
 use rook::rook_rays;
 mod bishop;
 use bishop::bishop_rays;
+mod dirty;
+use dirty::{combined_dirty, pawn_dirty};
 
 pub const KNIGHT_ATTACKS: BitGrid = knight_attacks();
 pub const KING_ATTACKS: BitGrid = king_attacks();
 pub const PAWN_ATTACKS: [BitGrid; 2] = pawn_attacks();
 pub const ROOK_RAYS: [[[Pos; 7]; 4]; 64] = rook_rays();
 pub const BISHOP_RAYS: [[[Pos; 7]; 4]; 64] = bishop_rays();  
+
+pub const COMBINED_DIRTY: BitGrid = combined_dirty();
+pub const PAWN_DIRTY: BitGrid = pawn_dirty();
+
 
 
 

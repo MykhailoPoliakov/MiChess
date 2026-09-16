@@ -16,15 +16,17 @@ pub use nnue_file::NNUE;
 #[derive(Clone)]
 pub struct Game {
     pub state: GameState,
-    pub played: LastPlayed,
+    pub played: Option<PlayedMove>,
     pub cache: GameCache,
+
     pub history: Vec<GameLog>,
     pub transformer: Transformer,
+    pub seed: u64,
 }
 
 
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 pub struct GameState {
     pub board: Board,
     pub en_passant: Option<u8>,
@@ -47,17 +49,9 @@ pub struct GameCache {
 }
 
 
-#[derive(Clone)]
-pub struct LastPlayed {
-    // updated with self.play
-    pub mv: Option<PlayedMove>,
-    pub dirty: BitBoard,
-}
-
-
 
 impl Game {
-    pub fn new(board: Board) -> Self {
+    pub fn new(board: Board, seed: u64) -> Self {
         let transformer = Transformer::new(&NNUE, &board, board.king_pos());
 
         let mut game = Game {
@@ -69,10 +63,7 @@ impl Game {
                 player: Color::White,
                 mode: GameMode::Active,
             },
-            played: LastPlayed {
-                mv: None, 
-                dirty: BitBoard(u64::MAX),
-            },
+            played: None,
             cache: GameCache {
                 check: false,
                 king_pos: [64;2],
@@ -83,9 +74,17 @@ impl Game {
             },
             history: Vec::new(),
             transformer,
+            seed,
         };
         game.update();
         game
+    }
+}
+
+
+impl Default for Game {
+    fn default() -> Self {
+        Game::new(Board::default(), 0x71F2_9A3C_5B44)
     }
 }
 

@@ -3,51 +3,18 @@ use super::*;
 
 impl Game {
     pub(super) fn mode_check(&mut self) -> () {
-        self.win_check();
-        self.stalemate_check();
+        self.stalemate_and_win_check();
         self.no_material_check();
         self.rule_50_check();
     }
 
 
-    fn win_check(&mut self) -> () {
-        if !self.cache.check {
-            return;
-        }
-
-        let king_pos = self.cache.king_pos[self.state.player as usize];
-        if !self.cache.legal[king_pos].is_empty() {
-            return;
-        }
-
-        for mv in self.cache.legal_moves.clone() {
-            // make move
-            self.history.push(self.save());
-            self.make_move(mv);
-            self.update();
-            self.transformer.play(&NNUE, &self.state.board, self.cache.king_pos, self.played.mv.unwrap());
-            // if there is any move to avoid mate
-            if !self.cache.cover_comb[self.state.player.opp() as usize].get(king_pos) {
-                self.undo();
-                return;
+    fn stalemate_and_win_check(&mut self) -> () {
+        if self.cache.legal_moves.is_empty() {
+            match self.cache.check {
+                true  => self.state.mode = GameMode::Finished(Some(self.state.player.opp())),
+                false => self.state.mode = GameMode::Finished(None),
             }
-            self.undo();
-        }
-        self.state.mode = GameMode::Finished(Some(self.state.player.opp()));
-    }
-
-
-    fn stalemate_check(&mut self) -> () {
-        // stalemate
-        if !self.cache.check {
-            for pos in 0..64 {
-                if self.state.board[pos].is_some_and(|p| p.color == self.state.player) &&
-                !self.cache.legal[pos].is_empty() {
-                    return;
-                }
-            }
-            self.state.mode = GameMode::Finished(None);
-            return;
         }
     }
 
@@ -73,8 +40,10 @@ impl Game {
 
     fn rule_50_check(&mut self) {
         // reset
-        if let Some(played) = self.played.mv {
-            if self.state.board[played.mv.1].is_some_and( |p| p.role == Role::Pawn) && played.captured.is_some() {
+        if let Some(played) = self.played {
+            if self.state.board[played.mv.1].is_some_and( |p| p.role == Role::Pawn) || 
+            played.captured.is_some() ||
+            played.tp != MoveType::Basic {
                 self.state.rule_50moves = 0;
             }
         }

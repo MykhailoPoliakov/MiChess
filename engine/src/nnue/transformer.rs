@@ -29,7 +29,11 @@ impl Transformer {
         }
         // if captured
         if let Some(captured) = played.captured {
-            self.remove(nnue, get_features(captured, played.mv.1, king_pos));
+            let captured_pos = match played.tp {
+                MoveType::EnPassant => played.mv.0.row() * 8 + played.mv.1.col(),
+                _ => played.mv.1,
+            };
+            self.remove(nnue, get_features(captured, captured_pos, king_pos));
         }
         // if promotion
         if played.tp == MoveType::Promotion {
@@ -55,9 +59,13 @@ impl Transformer {
             *self = Transformer::new(nnue, board, king_pos);
             return
         }
-        // if captured
+        // if uncaptured
         if let Some(uncaptured) = unplayed.captured {
-            self.add(nnue, get_features(uncaptured, unplayed.mv.1, king_pos));
+            let captured_pos = match unplayed.tp {
+                MoveType::EnPassant => unplayed.mv.0.row() * 8 + unplayed.mv.1.col(),
+                _ => unplayed.mv.1,
+            };
+            self.add(nnue, get_features(uncaptured, captured_pos, king_pos));
         }
         // if promotion
         if unplayed.tp == MoveType::Promotion {

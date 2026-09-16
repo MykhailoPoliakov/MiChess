@@ -1,31 +1,42 @@
 use super::*;
 
-use rand::prelude::*;
+// chooses move out of all given moves
+impl Game {
+    pub fn choose_move(&mut self, moves: &mut Vec<(Move, i32)>) -> Move {
+        let min_value = moves.iter()
+            .map(|(_, value)| if self.state.player == Color::White { *value } else { -*value })
+            .min().unwrap();
 
+        let total: u64 = moves.iter()
+            .map(|(_, value)| {
+                let score = if self.state.player == Color::White { *value } else { -*value };
+                let diff = (score as i64 - min_value as i64 + 1) as u64;
+                diff.pow(2)
+            })
+            .sum();
 
-// chooses move aut of all given moves
-pub fn choose_move( moves: &mut Vec<(Move, i32)> ) -> Move {
-    let mut rng = rand::rng();
+        let mut rnd = self.seed_update() % total;
 
-    // sort by weight
-    moves.sort_by_key(|mv_vl| std::cmp::Reverse(mv_vl.1));
-    println!("Sorted moves : {moves:?}");
+        for (mv, value) in moves {
+            let score = if self.state.player == Color::White { *value } else { -*value };
+            let weight = ((score - min_value + 1) as u64).pow(2);
 
-    let max_value = moves[0].1;
-    let min_value = moves.last().unwrap().1;
-    if max_value == min_value {
-        return moves[rng.random_range(0..moves.len()) as usize].0;
+            if rnd < weight {
+                return *mv;
+            }
+
+            rnd -= weight;
+        }
+
+        unreachable!()
     }
-    let mut sorted: Vec<(Move, f64)> = Vec::new();
-    
-    for mv_vl in moves {
-        let coef: f64 = ((mv_vl.1 - min_value) as f64 / (max_value - min_value) as f64).powf(5.0);
-        sorted.push((mv_vl.0, coef));
+
+
+
+    fn seed_update(&mut self) -> u64 {
+        self.seed ^= self.seed << 13;
+        self.seed ^= self.seed >> 7;
+        self.seed ^= self.seed << 17;
+        self.seed
     }
-
-    println!("Coef moves : {sorted:?}");
-    let chosen = sorted.choose_weighted(&mut rng, |item| item.1).unwrap();
-
-    return chosen.0
 }
-

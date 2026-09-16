@@ -5,9 +5,10 @@ mod legal_moves;
 mod pieces;
 mod constants;
 use constants::*;
+mod get_dirty;
 
-// Analyses the board, saves all the game.legal moves and covers for exact board position.
-// Changes: game.game.legal , game.w_cover , game.b_cover
+// Analyses the board, saves all cached data
+// Changes: game.cache
 
 impl Game {
     pub fn update(&mut self) -> () {
@@ -15,7 +16,8 @@ impl Game {
         let pieces = board_to_bitboards(&self.state.board);
 
         // for every dirty piece
-        for pos in self.played.dirty.clone().iter_pos() {
+        //for pos in 0..64 {
+        for pos in self.get_dirty().clone().iter_pos() {
 
             // cleaning
             self.cache.cover[pos] = BitBoard::new();
@@ -55,9 +57,8 @@ impl Game {
         self.update_king_legal(self.cache.king_pos[0], pieces[0]);
         self.update_king_legal(self.cache.king_pos[1], pieces[1]);
 
-        // save legal moves
-        self.update_legal_moves();
-        // check if there is a check
+        // save legal moves and check status
+        self.update_legal_moves(pieces);
         self.cache.check = self.cache.cover_comb[self.state.player.opp() as usize].get(self.cache.king_pos[self.state.player as usize]);
     }
 
@@ -67,18 +68,15 @@ impl Game {
 
 
 
-fn board_to_bitboards(board: &Board) -> [BitBoard;2] {
-    let mut white = BitBoard::new();
-    let mut black = BitBoard::new();
-    
-    for (i, square) in board.0.iter().enumerate() {
+fn board_to_bitboards(board: &Board) -> [BitBoard; 2] {
+    let mut result = [BitBoard(0); 2];
+    let mut i: u64 = 0;
+    for square in &board.0 {
         if let Some(piece) = square {
-            match piece.color {
-                Color::White => white.0 |= 1u64 << i,
-                Color::Black => black.0 |= 1u64 << i,
-            }
+            result[piece.color as usize].0 |= 1u64 << i;
         }
+        i += 1;
     }
-    [white, black]
+    result
 }
 

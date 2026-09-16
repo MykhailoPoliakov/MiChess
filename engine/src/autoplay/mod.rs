@@ -1,18 +1,15 @@
 use super::*;
 
-
-
 mod analyze;
-use analyze::{analyze};
 mod eval;
 mod choose_move;
-use choose_move::choose_move;
 
 
 
-struct Config {
-    init_player: Color,
-    max_depth: i8
+pub struct Contex {
+    pub init_player: Color,
+    pub depth: i8,
+    pub iterated: i32,
 }
 
 
@@ -20,34 +17,33 @@ impl Game {
     pub fn autoplay(&mut self) -> () {
         // clone for safety
         let game = &mut self.clone(); 
-
-        let mut moves_iterated: Vec<i32> = Vec::new();
-
-        let config = Config { init_player: game.state.player, max_depth: 2 };
-
+        
+        let mut ctx = Contex { init_player: game.state.player, depth: 1, iterated: 0};
+        
         let mut moves: Vec<(Move, i32)> = Vec::new(); 
 
-        // iterating through all legal moves
-        for &mv in &self.cache.legal_moves {
-            if game.play(mv).is_ok() {
-                let mut iterated = 0;
-                
-                let value = analyze(&config, game, 1, &mut iterated);
+        // playing all legal moves and getting move value
+        for mv in game.cache.legal_moves.clone() {
+            if game.validate(mv).is_err() {
+                panic!("1! {}", self)
+            }
+            game.play(mv);
+            ctx.iterated = 0;
+            
+            let value = game.analyze(&mut ctx);
 
-                moves_iterated.push(iterated);
+            println!("Move: {:?}, Value: {:?}, Iteratrions done : {}", move_to_str(mv), value, ctx.iterated);
 
-                moves.push((mv, value));
-                game.undo();
-            } 
+            moves.push((mv, value));
+            game.undo();
         }
 
         // make move
-        let mv: Move = choose_move(&mut moves);
-        self.play(mv).unwrap();
+        let mv = self.choose_move(&mut moves);
+        self.play(mv);
 
         // console ouput
-        println!("\nIteratrions done : {:?}", moves_iterated);
-        println!("\n---Bot makes move!---\nchosen move: {mv:?}\n");
+        println!("\n---Bot makes move!---\nchosen move: {}\n", move_to_str(mv));
     }
 }
 

@@ -24,12 +24,24 @@ impl PosExt for u8 {
 pub type Move = (Pos, Pos);
 
 
+pub fn move_to_str(mv: Move) -> String {
+    format!("{} {}", pos_to_str(mv.0), pos_to_str(mv.1))
+}
+
+pub fn pos_to_str(pos: Pos) -> String {
+    let col = (b'a' + pos % 8) as char;
+    let row = 8 - pos / 8;
+    format!("{}{}", col, row)
+}
+
+
 #[derive(Copy, Clone, Debug)]
 pub struct PlayedMove {
     pub mv: Move,
     pub tp: MoveType,
     pub captured: Option<Piece>,
-
+    pub old_en_passant: Option<u8>,
+    pub old_castle: [[bool; 2]; 2],
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]

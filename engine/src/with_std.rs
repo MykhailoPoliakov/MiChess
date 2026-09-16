@@ -3,6 +3,7 @@ use super::*;
 use std::fmt;
 
 
+
 impl fmt::Display for BitBoard {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in 0..8 {
@@ -88,14 +89,14 @@ impl fmt::Display for Game {
                     4 => writeln!(f, "4  |  50 moves rule: {}", self.state.rule_50moves)?,
                     5 => writeln!(f, "3  |  Check: {}", self.cache.check)?,
                     6 => writeln!(f, "2  |  Moves played: {}", self.history.len())?,
-                    7 => writeln!(f, "1  |  Last played move: {:?}", self.played.mv)?,
+                    7 => writeln!(f, "1  |  Last played move: {:?}", self.played)?,
                     _ => {},
                 }
             }
         }
 
         writeln!(f, "   a  b  c  d  e  f  g  h     |\n")?;
-        writeln!(f, "      Cover: White                 Cover: Black                 Updated Pos")?;
+        writeln!(f, "      Cover: White                 Cover: Black")?;
 
 
         for rank in 0..8 {
@@ -118,22 +119,31 @@ impl fmt::Display for Game {
                 }
                 
             }
-            write!(f, "     ")?;
-
-            // dirty moves
-            for file in 0..8 {
-                let pos = rank * 8 + file;
-                match self.played.dirty.get(pos) {
-                    true => write!(f, "XX ")?,
-                    false => write!(f, "__ ")?,
-                }
-            }
             writeln!(f)?;
+
         }
 
-        writeln!(f, "\ntransformer White: {:?}", self.transformer.0)?;
-        writeln!(f, "transformer Black: {:?}", self.transformer.1)?;
+        // writeln!(f, "\ntransformer White: {:?}", self.transformer.0)?;
+        // writeln!(f, "transformer Black: {:?}", self.transformer.1)?;
 
         writeln!(f,"\n")
+    }
+}
+
+
+
+pub struct _HistoryDisplay<'a>(pub &'a [GameLog]);
+
+impl fmt::Display for _HistoryDisplay<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (i, log) in self.0.iter().enumerate() {
+            if let Some(played) = log.played {
+                if i != 0 {
+                    write!(f, " ")?;
+                }
+                write!(f, "[{},{}],", played.mv.0, played.mv.1)?;
+            }
+        }
+        Ok(())
     }
 }

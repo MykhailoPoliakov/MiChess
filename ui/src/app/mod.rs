@@ -23,7 +23,7 @@ struct App {
 impl App {
     fn new(cc: &eframe::CreationContext) -> Self {
         App {
-            game: Game::new(Board::default()),
+            game: Game::new(Board::default(), 2345867),
 
             textures: App::load_textures(cc),
 

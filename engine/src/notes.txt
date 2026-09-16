@@ -3,6 +3,8 @@ current time in --resease:
     undo: 2µs
     eval: 22µs
 
+    play (no transformer): 3µs
+
 
 
 

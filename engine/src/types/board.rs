@@ -1,7 +1,7 @@
 use super::*;
 
 
-#[derive(Clone)]
+#[derive(Clone, Copy,  Debug)]
 pub struct Board( pub [Option<Piece>; 64] );
 
 impl Board {

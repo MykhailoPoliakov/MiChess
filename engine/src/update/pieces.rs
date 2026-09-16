@@ -6,7 +6,6 @@ impl Game {
         // cover
         self.cache.cover[pos].0 = PAWN_ATTACKS[piece.color as usize][pos].0;
 
-
         // capture
         self.cache.legal[pos].0 = PAWN_ATTACKS[piece.color as usize][pos].0 & enemy_pieces.0;
 
@@ -25,7 +24,6 @@ impl Game {
             }
         }
 
-
         // en passant
         if let Some(en_passant) = self.state.en_passant {
             if match piece.color {Color::White => (pos / 8) as i8 == 3, Color::Black => (pos / 8) as i8 == 4} {
@@ -40,9 +38,8 @@ impl Game {
 
 
     pub(super) fn update_knight(&mut self, pos: Pos, friendly_pieces: BitBoard) -> () {
-        let attacks = KNIGHT_ATTACKS[pos];
-        self.cache.cover[pos].0 = attacks.0;
-        self.cache.legal[pos].0 = attacks.0 & !friendly_pieces.0;
+        self.cache.cover[pos].0 = KNIGHT_ATTACKS[pos].0;
+        self.cache.legal[pos].0 = KNIGHT_ATTACKS[pos].0 & !friendly_pieces.0;
     }
 
 
@@ -54,7 +51,10 @@ impl Game {
                 self.cache.cover[pos].set(end_pos);
                 if pieces[color as usize].get(end_pos) { break; };
                 self.cache.legal[pos].set(end_pos);
-                if pieces[color.opp() as usize].get(end_pos) { break; };
+                if pieces[color.opp() as usize].get(end_pos) {
+                    if self.state.board[end_pos].is_some_and(|p| p.role == Role::King) {continue;}
+                    break;
+                }
             }
         } 
     }
@@ -68,7 +68,10 @@ impl Game {
                 self.cache.cover[pos].set(end_pos);
                 if pieces[color as usize].get(end_pos) { break; };
                 self.cache.legal[pos].set(end_pos);
-                if pieces[color.opp() as usize].get(end_pos) { break; };
+                if pieces[color.opp() as usize].get(end_pos) {
+                    if self.state.board[end_pos].is_some_and(|p| p.role == Role::King) {continue;}
+                    break;
+                }
             }
         } 
     }
@@ -91,7 +94,7 @@ impl Game {
 
         // castle
         let row: u8 = (match color { Color::White => 7, Color::Black => 0 }) *8;
-        if king_pos == row+4 {
+        if king_pos == row+4 && !op_cover.get(king_pos){
             // left
             if self.state.castle[color as usize][0] {
                 if  self.state.board[row+3].is_none() && !op_cover.get(row+3) &&
