@@ -11,7 +11,8 @@ impl App {
         if ui.input(|i| i.key_pressed(egui::Key::Space)) {
             println!("{}", self.game);
             if self.game.state.mode == GameMode::Active {
-                timed(|| self.game.autoplay());
+                let mv = timed(|| self.game.best_move());
+                self.game.play(mv);
             } else {
                 println!("{:?}", self.game.state.mode);
             }
@@ -30,13 +31,7 @@ impl App {
         if ui.input(|i| i.key_pressed(egui::Key::E)) {
             println!("{}", self.game.eval());
         }
-         
-
-        if ui.input(|i| i.key_pressed(egui::Key::D)) {
-            for i in [[55,39], [11,19], [52,36], [6,21], [36,28], [14,30], [39,30]] {
-                self.game.play((i[0], i[1]));
-            }
-        }
+        
 
     }
 

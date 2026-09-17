@@ -1,6 +1,6 @@
 mod play;
 mod update;
-mod autoplay;
+mod best_move;
 mod types;
 pub use types::*;
 mod with_std;

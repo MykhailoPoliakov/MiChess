@@ -14,7 +14,7 @@ pub struct Contex {
 
 
 impl Game {
-    pub fn autoplay(&mut self) -> () {
+    pub fn best_move(&mut self) -> Move {
         // clone for safety
         let game = &mut self.clone(); 
         
@@ -24,9 +24,7 @@ impl Game {
 
         // playing all legal moves and getting move value
         for mv in game.cache.legal_moves.clone() {
-            if game.validate(mv).is_err() {
-                panic!("1! {}", self)
-            }
+            
             game.play(mv);
             ctx.iterated = 0;
             
@@ -39,11 +37,15 @@ impl Game {
         }
 
         // make move
+        // let mv = moves.iter()
+        //     .max_by_key(|(_, value)| {if self.state.player == Color::White { *value} else {-*value} })
+        //     .map(|(mv, _)| *mv)
+        //     .unwrap();
         let mv = self.choose_move(&mut moves);
-        self.play(mv);
 
         // console ouput
         println!("\n---Bot makes move!---\nchosen move: {}\n", move_to_str(mv));
+        mv
     }
 }
 
