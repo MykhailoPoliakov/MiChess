@@ -1,6 +1,6 @@
 mod play;
 mod update;
-mod best_move;
+mod search;
 mod types;
 pub use types::*;
 mod with_std;
@@ -13,7 +13,7 @@ pub use nnue_file::NNUE;
 
 
 
-#[derive(Clone)]
+
 pub struct Game {
     pub state: GameState,
     pub played: Option<PlayedMove>,
@@ -22,11 +22,14 @@ pub struct Game {
     pub history: Vec<GameLog>,
     pub transformer: Transformer,
     pub seed: u64,
+    pub search: SearchInfo,
 }
 
 
 
-#[derive(Clone, Copy, Debug)]
+
+
+#[derive(Clone)]
 pub struct GameState {
     pub board: Board,
     pub en_passant: Option<u8>,
@@ -36,8 +39,20 @@ pub struct GameState {
     pub mode: GameMode,
 }
 
+impl Default for GameState {
+    fn default() -> Self {
+        GameState { 
+            board: Board::default(),
+            en_passant: None,
+            castle: [[true,true],[true,true]],
+            rule_50moves: 0,
+            player: Color::White,
+            mode: GameMode::Active,
+        }
+    }
+}
 
-#[derive(Clone)]
+
 pub struct GameCache {
     // update with self.update
     pub legal: BitGrid,
@@ -51,18 +66,11 @@ pub struct GameCache {
 
 
 impl Game {
-    pub fn new(board: Board, seed: u64) -> Self {
-        let transformer = Transformer::new(&NNUE, &board, board.king_pos());
+    pub fn new(state: GameState, seed: u64) -> Self {
+        let transformer = Transformer::new(&NNUE, &state.board, state.board.king_pos());
 
         let mut game = Game {
-            state: GameState { 
-                board,
-                en_passant: None,
-                castle: [[true,true],[true,true]],
-                rule_50moves: 0,
-                player: Color::White,
-                mode: GameMode::Active,
-            },
+            state,
             played: None,
             cache: GameCache {
                 check: false,
@@ -75,16 +83,16 @@ impl Game {
             history: Vec::new(),
             transformer,
             seed,
+            search: SearchInfo::new(),
         };
         game.update();
         game
     }
 }
 
-
 impl Default for Game {
     fn default() -> Self {
-        Game::new(Board::default(), 0x71F2_9A3C_5B44)
+        Game::new(GameState::default(), 0x71F2_9A3C_5B44)
     }
 }
 

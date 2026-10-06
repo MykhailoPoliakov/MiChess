@@ -27,6 +27,7 @@ impl fmt::Display for Color {
     }
 }
 
+
 impl fmt::Display for Role {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -89,7 +90,7 @@ impl fmt::Display for Game {
                     4 => writeln!(f, "4  |  50 moves rule: {}", self.state.rule_50moves)?,
                     5 => writeln!(f, "3  |  Check: {}", self.cache.check)?,
                     6 => writeln!(f, "2  |  Moves played: {}", self.history.len())?,
-                    7 => writeln!(f, "1  |  Last played move: {:?}", self.played)?,
+                    7 => writeln!(f, "1  | ")?,
                     _ => {},
                 }
             }

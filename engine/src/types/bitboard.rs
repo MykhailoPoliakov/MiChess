@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone)]
 pub struct BitBoard(pub u64);
 
 impl BitBoard {

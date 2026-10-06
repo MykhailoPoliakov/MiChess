@@ -1,7 +1,6 @@
 use super::*;
 
 
-#[derive(Clone, Debug)]
 pub struct GameLog {
     pub state: GameState,
     pub played: Option<PlayedMove>,
@@ -11,7 +10,7 @@ pub struct GameLog {
 impl Game {
     pub fn save(&self) -> GameLog {
         GameLog {
-            state: self.state,
+            state: self.state.clone(),
             played: self.played,
         }
     }

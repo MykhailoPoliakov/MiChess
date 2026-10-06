@@ -1,5 +1,5 @@
 // Color
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Color {
     White = 0,
     Black = 1
@@ -17,7 +17,7 @@ impl Color {
 
 
 // Role
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Role {
     King,
     Queen,
@@ -29,7 +29,7 @@ pub enum Role {
 
 
 // Piece
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Piece {
     pub color: Color, 
     pub role: Role,

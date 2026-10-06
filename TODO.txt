@@ -1,0 +1,12 @@
+
+
+no alpha-beta pruning 
+no transposition table
+
+nnue
+
+eval
+
+
+
+

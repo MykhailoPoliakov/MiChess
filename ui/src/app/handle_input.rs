@@ -11,12 +11,12 @@ impl App {
         if ui.input(|i| i.key_pressed(egui::Key::Space)) {
             println!("{}", self.game);
             if self.game.state.mode == GameMode::Active {
-                let mv = timed(|| self.game.best_move());
-                self.game.play(mv);
-            } else {
-                println!("{:?}", self.game.state.mode);
-            }
-            
+                timed(|| self.game.start_search());
+                if self.game.validate(self.game.search.mv.unwrap()).is_ok() {
+                    self.game.play(self.game.search.mv.unwrap());
+                }
+                
+            }    
         }
 
         // print game
@@ -24,12 +24,21 @@ impl App {
             println!("{}", self.game);
         }
 
+        // undo last move
         if ui.input(|i| i.key_pressed(egui::Key::Z)) {
             self.game.undo();
         }
 
         if ui.input(|i| i.key_pressed(egui::Key::E)) {
-            println!("{}", self.game.eval());
+            self.game.start_search();
+            if let Some(eval) = self.game.search.eval {
+                match eval {
+                    Eval::Mate(value) => println!("Game Eval: {}", value),
+                    Eval::Value(value) => println!("Mate in {}", value),
+                }
+                
+            }
+            
         }
         
 
