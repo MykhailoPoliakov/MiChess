@@ -11,9 +11,9 @@ impl App {
         if ui.input(|i| i.key_pressed(egui::Key::Space)) {
             println!("{}", self.game);
             if self.game.state.mode == GameMode::Active {
-                timed(|| self.game.start_search());
-                if self.game.validate(self.game.search.mv.unwrap()).is_ok() {
-                    self.game.play(self.game.search.mv.unwrap());
+                self.game.start_search();
+                if self.game.validate(self.game.search.result.clone().unwrap().mv).is_ok() {
+                    self.game.play(self.game.search.result.clone().unwrap().mv);
                 }
                 
             }    
@@ -31,14 +31,12 @@ impl App {
 
         if ui.input(|i| i.key_pressed(egui::Key::E)) {
             self.game.start_search();
-            if let Some(eval) = self.game.search.eval {
-                match eval {
-                    Eval::Mate(value) => println!("Game Eval: {}", value),
-                    Eval::Value(value) => println!("Mate in {}", value),
-                }
-                
+            if let Some(result) = &self.game.search.result {
+                match result.eval {
+                    Eval::Value(value) => println!("Game Eval: {}", value),
+                    Eval::Mate(value) => println!("Mate in {}", value),
+                }  
             }
-            
         }
         
 

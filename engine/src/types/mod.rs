@@ -10,6 +10,12 @@ mod search;
 pub use search::*;
 mod mv;
 pub use mv::*;
+mod gamelog;
+pub use gamelog::GameLog;
+mod gamecache;
+pub use gamecache::GameCache;
+mod gamestate;
+pub use gamestate::GameState;
 
 
 

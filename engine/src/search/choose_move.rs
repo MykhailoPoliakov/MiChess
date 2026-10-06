@@ -3,13 +3,14 @@ use super::*;
 
 // chooses move out of all given moves
 impl Game {
-    pub fn choose_move(&mut self, moves: &mut Vec<(Move, i32)>) -> Move {
-        let min_value = moves.iter()
-            .map(|(_, value)| if self.state.player == Color::White { *value } else { -*value })
+    pub fn choose_move(&mut self) -> Move {
+
+        let min_value = self.search.moves.iter()
+            .map(|(_, _, value)| if self.state.player == Color::White { *value } else { -*value })
             .min().unwrap();
 
-        let total: u64 = moves.iter()
-            .map(|(_, value)| {
+        let total: u64 = self.search.moves.iter()
+            .map(|(_, _, value)| {
                 let score = if self.state.player == Color::White { *value } else { -*value };
                 let diff = (score as i64 - min_value as i64 + 1) as u64;
                 diff.pow(3)
@@ -18,7 +19,7 @@ impl Game {
 
         let mut rnd = self.seed_update() % total;
 
-        for (mv, value) in moves {
+        for (mv,_ , value) in &self.search.moves {
             let score = if self.state.player == Color::White { *value } else { -*value };
             let weight = ((score - min_value + 1) as u64).pow(3);
 

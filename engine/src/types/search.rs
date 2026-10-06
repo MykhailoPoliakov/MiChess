@@ -1,5 +1,20 @@
 use super::*;
 
+#[derive(Clone)]
+pub struct SearchResult {
+    pub mv: Move,
+    pub eval: Eval,
+} 
+
+
+#[derive(Clone)]
+pub enum SearchStatus {
+    None,
+    InProgress(f32),
+    Finished,
+}
+
+
 #[derive(Clone, Copy)]
 pub enum Eval {
     Value(f32),
@@ -15,29 +30,53 @@ impl Eval {
     }
 }
 
-
-#[derive(Clone)]
-pub enum SearchStatus {
-    None,
-    InProgress(f32),
-    Finished,
+impl PartialEq for Eval {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Eval::Value(a), Eval::Value(b)) => a == b,
+            (Eval::Mate(a), Eval::Mate(b)) => a == b,
+            _ => false,
+        }
+    }
 }
+
+impl Eq for Eval {}
+
+impl PartialOrd for Eval {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Eval {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (Eval::Value(a), Eval::Value(b)) => a.total_cmp(b),
+            (Eval::Mate(a), Eval::Mate(b)) => a.cmp(b),
+
+            // Mate is better than any normal evaluation
+            (Eval::Mate(_), Eval::Value(_)) => std::cmp::Ordering::Greater,
+            (Eval::Value(_), Eval::Mate(_)) => std::cmp::Ordering::Less,
+        }
+    }
+}
+
+
+
 
 #[derive(Clone)]
 pub struct SearchInfo {
-    pub mv: Option<Move>,
-    pub eval: Option<Eval>,
+    pub result: Option<SearchResult>,
     pub status: SearchStatus,
-    pub info: Vec<(Move, Eval, i32)>, // i32 - Iteration count
+    pub moves: Vec<(Move, Eval, i32)>, // i32 - Iteration count
 }
 
 impl SearchInfo {
     pub fn new() -> Self {
         SearchInfo { 
-            mv: None,
-            eval: None,
+            result: None,
             status: SearchStatus::None,
-            info: Vec::new(),
+            moves: Vec::new(),
         }
     }
 }

@@ -15,36 +15,34 @@ pub struct Contex {
 impl Game {
     pub fn start_search(&mut self) {
         self.search = SearchInfo::new();
-        let total = self.cache.legal_moves.len() as f32;
+        let total_moves = self.cache.legal_moves.len() as f32;
         
         let mut ctx = Contex { init_player: self.state.player, depth: 1, iterated: 0};
-        
-        let mut moves: Vec<(Move, i32)> = Vec::new(); 
 
-        
+        let mut game = Game::new(self.state.clone(), self.seed);
 
         // playing all legal moves and getting move value
         for mv in self.cache.legal_moves.clone() {
-            
-            self.play(mv);
-            ctx.iterated = 0;
+            game.play(mv);
 
-            let value = self.analyze(&mut ctx);
+            ctx.iterated = 0;
+            let value = game.analyze(&mut ctx);
             
-            self.search.status = SearchStatus::InProgress(moves.len() as f32 / total);
-            self.search.info.push((mv, Eval::from_value(value), ctx.iterated));
-            
-            moves.push((mv, value));
-            self.undo();
+            self.search.moves.push((mv, Eval::from_value(value), ctx.iterated));
+            self.search.status = SearchStatus::InProgress(self.search.moves.len() as f32 / total_moves);
+
+            game.undo();
         }
 
 
         self.search.status = SearchStatus::Finished;
-        self.search.mv = Some(self.choose_move(&mut moves));
-        self.search.eval = Some(Eval::from_value(match self.state.player {
-            Color::White => moves.iter().map(|x| x.1).max().unwrap(),
-            Color::Black => moves.iter().map(|x| x.1).min().unwrap(),
-        }));
+        self.search.result = Some( SearchResult { 
+            mv: self.choose_move(),
+            eval: match self.state.player {
+                Color::White => self.search.moves.iter().max_by_key(|x| x.1),
+                Color::Black => self.search.moves.iter().min_by_key(|x| x.1),
+            }.unwrap().1
+        });
     }
 }
 

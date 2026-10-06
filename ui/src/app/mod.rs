@@ -3,7 +3,6 @@ use eframe::egui;
 
 mod render;
 use std::collections::HashMap;
-
 mod handle_input;
 
 
@@ -18,6 +17,7 @@ struct App {
     dragged: Option<egui::Pos2>,
 
     square_size: f32,
+    board_pos: egui::Pos2,
 }
 
 impl App {
@@ -31,6 +31,7 @@ impl App {
             dragged: None,
 
             square_size: 80.0,
+            board_pos: egui::Pos2::new(0.0, 0.0),
         }
     }
 }
@@ -49,7 +50,7 @@ impl eframe::App for App {
 pub fn run() {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([640.0, 640.0]),
+            .with_inner_size([720.0, 640.0]),
         ..Default::default()
     };
 
