@@ -13,7 +13,7 @@ mod get_dirty;
 impl Game {
     pub fn update(&mut self) -> () {
         // get pieces location BitBoards
-        let pieces = board_to_bitboards(&self.state.board);
+        let pieces = self.state.board.to_bitboards();
 
         // for every dirty piece
         //for pos in 0..64 {
@@ -61,22 +61,7 @@ impl Game {
         self.update_legal_moves(pieces);
         self.cache.check = self.cache.cover_comb[self.state.player.opp() as usize].get(self.cache.king_pos[self.state.player as usize]);
     }
-
-
 }
 
 
-
-
-fn board_to_bitboards(board: &Board) -> [BitBoard; 2] {
-    let mut result = [BitBoard(0); 2];
-    let mut i: u64 = 0;
-    for square in &board.0 {
-        if let Some(piece) = square {
-            result[piece.color as usize].0 |= 1u64 << i;
-        }
-        i += 1;
-    }
-    result
-}
 

@@ -56,6 +56,28 @@ impl Game {
 
         return true;        
     }
+
+
+    pub fn run(&mut self, moves: &str) {
+        let mut count: i32 = 0;
+
+        for str_mv in moves.split_whitespace() {
+            let mv = str_to_move(str_mv);
+
+            if self.validate(mv).is_err() {
+                panic!("Move {} wasn't walidated at index: {}", str_mv, count);
+            }
+            self.play(mv); 
+            count += 1;
+        }
+    }
+
+    
+    pub fn unrun(&mut self, amount: i32) {
+        for _ in 0..amount {
+            self.undo(); 
+        }
+    }
 }
 
 

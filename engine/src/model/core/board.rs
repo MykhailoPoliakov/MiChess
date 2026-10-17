@@ -18,7 +18,7 @@ impl Board {
         ])
     } 
 
-    pub fn king_pos(&self) -> [u8; 2] {
+    pub fn get_king_pos(&self) -> [u8; 2] {
         let mut king_pos = [64;2];
         for pos in 0..64 {
             match self[pos] {
@@ -39,9 +39,23 @@ impl Board {
         if king_pos[0] == 64 { panic!("Missing white king.") }
         if king_pos[1] == 64 { panic!("Missing black king.") }
         
-
         king_pos
     }
+
+    pub fn to_bitboards(&mut self) -> [BitBoard; 2] {
+        let mut bitboards = [BitBoard(0); 2];
+        let mut i: u64 = 0;
+        for square in &self.0 {
+            if let Some(piece) = square {
+                bitboards[piece.color as usize].0 |= 1u64 << i;
+            }
+            i += 1;
+        }
+        bitboards
+    }
+
+
+
 }
 
 

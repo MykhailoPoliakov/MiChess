@@ -99,7 +99,7 @@ impl Game {
             if self.state.castle[color as usize][0] {
                 if  self.state.board[row+3].is_none() && !op_cover.get(row+3) &&
                     self.state.board[row+2].is_none() && !op_cover.get(row+2) &&
-                    self.state.board[row+1].is_none() && !op_cover.get(row+1) &&
+                    self.state.board[row+1].is_none() && 
                     self.state.board[row+0] == Some(Piece{ color, role: Role::Rook}) {
                         self.cache.legal[king_pos].set(row+2);
                 }

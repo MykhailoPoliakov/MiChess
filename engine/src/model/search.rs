@@ -1,5 +1,12 @@
 use super::*;
 
+pub struct SearchContex {
+    pub init_player: Color,
+    pub depth: i8,
+    pub iterated: i32,
+}
+
+
 #[derive(Clone)]
 pub struct SearchResult {
     pub mv: Move,
@@ -54,9 +61,12 @@ impl Ord for Eval {
             (Eval::Value(a), Eval::Value(b)) => a.total_cmp(b),
             (Eval::Mate(a), Eval::Mate(b)) => a.cmp(b),
 
-            // Mate is better than any normal evaluation
-            (Eval::Mate(_), Eval::Value(_)) => std::cmp::Ordering::Greater,
-            (Eval::Value(_), Eval::Mate(_)) => std::cmp::Ordering::Less,
+            (Eval::Mate(a), Eval::Value(_)) => {
+                if *a > 0 { std::cmp::Ordering::Greater } else { std::cmp::Ordering::Less }
+            }
+            (Eval::Value(_), Eval::Mate(b)) => {
+                if *b > 0 { std::cmp::Ordering::Less } else { std::cmp::Ordering::Greater }
+            }
         }
     }
 }

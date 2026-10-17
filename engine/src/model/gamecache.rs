@@ -1,7 +1,5 @@
 use super::*;
 
-
-
 pub struct GameCache {
     // update with self.update
     pub legal: BitGrid,
@@ -11,7 +9,6 @@ pub struct GameCache {
     pub king_pos: [Pos; 2],
     pub check: bool,
 }
-
 
 impl GameCache {
     pub fn new() -> Self {

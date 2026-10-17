@@ -1,5 +1,13 @@
 use super::*;
 
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum GameMode {
+    Active,
+    Finished(Option<Color>),
+}
+
+
 #[derive(Clone)]
 pub struct GameState {
     pub board: Board,

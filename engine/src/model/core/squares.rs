@@ -1,40 +1,4 @@
-// Color
-#[derive(Copy, Clone, PartialEq)]
-pub enum Color {
-    White = 0,
-    Black = 1
-}
-
-impl Color {
-    pub fn opp(&self) -> Color {
-        match self {
-            Color::White => Color::Black,
-            Color::Black => Color::White,
-        }
-        
-    }
-}
-
-
-// Role
-#[derive(Copy, Clone, PartialEq)]
-pub enum Role {
-    King,
-    Queen,
-    Rook,
-    Bishop,
-    Knight,
-    Pawn,
-}
-
-
-// Piece
-#[derive(Copy, Clone, PartialEq)]
-pub struct Piece {
-    pub color: Color, 
-    pub role: Role,
-}
-
+use super::{Piece, Color, Role};
 
 pub const WP: Option<Piece> = Some(Piece { color: Color::White, role: Role::Pawn   });
 pub const WR: Option<Piece> = Some(Piece { color: Color::White, role: Role::Rook   });

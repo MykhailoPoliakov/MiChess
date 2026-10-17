@@ -4,7 +4,7 @@ const MATE_VALUE: [i32; 2] =  [1_000_000, -1_000_000];
 
 
 impl Game {
-    pub fn analyze(&mut self, ctx: &mut Contex) -> i32 {
+    pub fn analyze(&mut self, ctx: &mut SearchContex) -> i32 {
         if let Some(value) = status(&self.state.mode, ctx.depth) {
             return value;
         }
@@ -48,7 +48,10 @@ fn status(mode: &GameMode, depth: i8) -> Option<i32> {
     match mode {
         &GameMode::Active => None,
         &GameMode::Finished(None) => Some(0),
-        &GameMode::Finished(Some(color)) => Some(MATE_VALUE[color as usize] - (depth/2) as i32),
+        &GameMode::Finished(Some(color)) => {
+            let sign = if color == Color::White { 1 } else { -1 };
+            Some(MATE_VALUE[color as usize] - (depth / 2) as i32 * sign)
+        }
     }
 }
 

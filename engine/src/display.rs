@@ -90,7 +90,7 @@ impl fmt::Display for Game {
                     4 => writeln!(f, "4  |  50 moves rule: {}", self.state.rule_50moves)?,
                     5 => writeln!(f, "3  |  Check: {}", self.cache.check)?,
                     6 => writeln!(f, "2  |  Moves played: {}", self.history.len())?,
-                    7 => writeln!(f, "1  | ")?,
+                    7 => writeln!(f, "1  |  Game mode: {:?}", self.state.mode)?,
                     _ => {},
                 }
             }
