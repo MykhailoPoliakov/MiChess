@@ -8,5 +8,7 @@ mod bitgrid;
 pub use bitgrid::BitGrid;
 mod bitboard;
 pub use bitboard::BitBoard;
+mod castle;
+pub use castle::{Castle, CastleExt};
 mod mv;
 pub use mv::{Pos, PosExt, Move, MoveType, MoveError, PlayedMove, move_to_str, pos_to_str, str_to_move};

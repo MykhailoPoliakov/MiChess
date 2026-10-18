@@ -1,4 +1,4 @@
-use super::{Piece, Role};
+use super::{Piece, Role, Castle};
 
 pub type Pos = u8;
 
@@ -46,7 +46,7 @@ pub struct PlayedMove {
     pub tp: MoveType,
     pub captured: Option<Piece>,
     pub old_en_passant: Option<u8>,
-    pub old_castle: [[bool; 2]; 2],
+    pub old_castle: Castle,
 }
 
 
@@ -55,7 +55,7 @@ pub enum MoveError {
     WrongMode,
     NoPiece,
     IlligalMove,
-    KingInDanger,
+    NoPromotionPiece
 }
 
 
@@ -75,12 +75,12 @@ impl Mv {
     }
 
 
-    pub fn str_to_move(pos: &str) -> Self {
+    pub fn from_str(pos: &str) -> Self {
         let bytes = pos.as_bytes();
         Mv::new((b'8' - bytes[1])*8 + (bytes[0] - b'a'), (b'8' - bytes[3])*8 + (bytes[2] - b'a'))
     }
 
-    pub fn move_to_str(&self) -> String {
+    pub fn to_str(&self) -> String {
         format!("{} {}", pos_to_str(self.st), pos_to_str(self.end))
     }
 }

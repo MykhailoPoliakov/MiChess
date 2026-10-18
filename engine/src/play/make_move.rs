@@ -40,10 +40,10 @@ impl Game {
             Role::Rook => {
                 // cancel castle
                 match start_pos {
-                    0  => self.state.castle[1][0] = false,  
-                    7  => self.state.castle[1][1] = false,  
-                    56 => self.state.castle[0][0] = false, 
-                    63 => self.state.castle[0][1] = false,  
+                    0  => self.state.castle.set(Color::Black, 0, false),  
+                    7  => self.state.castle.set(Color::Black, 1, false),  
+                    56 => self.state.castle.set(Color::White, 0, false), 
+                    63 => self.state.castle.set(Color::White, 1, false),  
                     _  => {}
                 }
             },
@@ -68,17 +68,17 @@ impl Game {
                     }
                 }
                 // cancel castle
-                self.state.castle[piece.color as usize] = [false, false];
+                self.state.castle.set_side(piece.color, false);
             },
             _ => {}
         }
 
         // if rook was captured cancel capture
         match end_pos {
-            0  => self.state.castle[1][0] = false,  
-            7  => self.state.castle[1][1] = false,  
-            56 => self.state.castle[0][0] = false, 
-            63 => self.state.castle[0][1] = false,  
+            0  => self.state.castle.set(Color::Black, 0, false),  
+            7  => self.state.castle.set(Color::Black, 1, false),  
+            56 => self.state.castle.set(Color::White, 0, false), 
+            63 => self.state.castle.set(Color::White, 1, false),  
             _  => {}
         }
 

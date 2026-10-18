@@ -1,6 +1,9 @@
 use super::*;
 
 
+
+
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum GameMode {
     Active,
@@ -12,7 +15,7 @@ pub enum GameMode {
 pub struct GameState {
     pub board: Board,
     pub en_passant: Option<u8>,
-    pub castle: [[bool; 2]; 2],
+    pub castle: u8,
     pub rule_50moves: u8,
     pub player: Color,
     pub mode: GameMode,
@@ -23,7 +26,7 @@ impl Default for GameState {
         GameState { 
             board: Board::default(),
             en_passant: None,
-            castle: [[true,true],[true,true]],
+            castle: 0b1111,
             rule_50moves: 0,
             player: Color::White,
             mode: GameMode::Active,

@@ -96,7 +96,7 @@ impl Game {
         let row: u8 = (match color { Color::White => 7, Color::Black => 0 }) *8;
         if king_pos == row+4 && !op_cover.get(king_pos){
             // left
-            if self.state.castle[color as usize][0] {
+            if self.state.castle.get(color, 0) {
                 if  self.state.board[row+3].is_none() && !op_cover.get(row+3) &&
                     self.state.board[row+2].is_none() && !op_cover.get(row+2) &&
                     self.state.board[row+1].is_none() && 
@@ -105,7 +105,7 @@ impl Game {
                 }
             } 
             // right
-            if self.state.castle[color as usize][1] {
+            if self.state.castle.get(color, 1) {
                 if  self.state.board[row+5].is_none() && !op_cover.get(row+5) &&
                     self.state.board[row+6].is_none() && !op_cover.get(row+6) &&
                     self.state.board[row+7] == Some(Piece{ color, role: Role::Rook}) {
