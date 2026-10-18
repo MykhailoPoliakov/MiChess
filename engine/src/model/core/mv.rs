@@ -1,4 +1,4 @@
-use super::{Piece};
+use super::{Piece, Role};
 
 pub type Pos = u8;
 
@@ -34,8 +34,8 @@ pub fn pos_to_str(pos: Pos) -> String {
 #[derive(Copy, Clone, PartialEq)]
 pub enum MoveType {
     Basic,
-    Promotion,
-    Castle(Move),
+    Promotion(Role),
+    Castle((Pos,Pos)),
     EnPassant,
 }
 
@@ -56,5 +56,32 @@ pub enum MoveError {
     NoPiece,
     IlligalMove,
     KingInDanger,
+}
+
+
+pub struct Mv {
+    pub st: Pos,
+    pub end: Pos,
+    pub tp: MoveType
+}
+
+impl Mv {
+    pub fn new(st: Pos, end: Pos) -> Self {
+        Mv {
+            st,
+            end,
+            tp: MoveType::Basic
+        }
+    }
+
+
+    pub fn str_to_move(pos: &str) -> Self {
+        let bytes = pos.as_bytes();
+        Mv::new((b'8' - bytes[1])*8 + (bytes[0] - b'a'), (b'8' - bytes[3])*8 + (bytes[2] - b'a'))
+    }
+
+    pub fn move_to_str(&self) -> String {
+        format!("{} {}", pos_to_str(self.st), pos_to_str(self.end))
+    }
 }
     

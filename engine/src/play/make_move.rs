@@ -8,7 +8,8 @@ impl Game {
         
         // creating played move
         let mut played = PlayedMove {
-            mv, tp: MoveType::Basic, captured: self.state.board[end_pos], 
+            mv, 
+            tp: MoveType::Basic, captured: self.state.board[end_pos], 
             old_en_passant: self.state.en_passant,
             old_castle: self.state.castle,
         };
@@ -86,7 +87,7 @@ impl Game {
         if piece.role == Role::Pawn && (end_pos < 8 || end_pos >= 56) {
             self.state.board[end_pos] = Some(Piece{color: self.state.player, role: Role::Queen});
             self.state.board[start_pos] = None;
-            played.tp = MoveType::Promotion;
+            played.tp = MoveType::Promotion(Role::Queen);
         } else {
             self.state.board[end_pos] = Some(piece);
             self.state.board[start_pos] = None;

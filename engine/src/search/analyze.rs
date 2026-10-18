@@ -69,7 +69,7 @@ impl Game {
                 return true;
             }
             // promotion
-            if played.tp == MoveType::Promotion {
+            if let MoveType::Promotion(_) = played.tp  {
                 return true;
             }
         }
