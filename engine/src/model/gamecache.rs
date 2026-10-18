@@ -2,12 +2,12 @@ use super::*;
 
 pub struct GameCache {
     // update with self.update
-    pub legal: BitGrid,
+    pub check: bool,
+    pub king_pos: [Pos; 2],
     pub cover: BitGrid,
+    pub legal: BitGrid,
     pub cover_comb: [BitBoard;2],
     pub legal_moves: Vec<Move>,
-    pub king_pos: [Pos; 2],
-    pub check: bool,
 }
 
 impl GameCache {

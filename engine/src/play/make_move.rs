@@ -4,77 +4,33 @@ impl Game {
     // changes: state and cache.played and cache.dirty
     // makes move and swaps player, caches played move
     pub(super) fn make_move(&mut self, mv: Move) {
-        let (start_pos, end_pos) = mv;
+        let piece = self.state.board[mv.start].unwrap();
         
-        // creating played move
-        let mut played = PlayedMove {
+        // save played move
+        self.played = Some(PlayedMove {
             mv, 
-            tp: MoveType::Basic, captured: self.state.board[end_pos], 
+            captured: if let MoveType::EnPassant(enpassant_pos) = mv.tp {self.state.board[enpassant_pos]} else {self.state.board[mv.end]}, 
             old_en_passant: self.state.en_passant,
             old_castle: self.state.castle,
-        };
+        });
 
-        // clear en passant
+        // reset en_passant
         self.state.en_passant = None;
-
-        let piece = self.state.board[start_pos].unwrap();
-        match piece.role {
-            Role::Pawn => {
-                // play en passant
-                if Some(end_pos.col()) == played.old_en_passant {
-                    let op_pawn_pos = start_pos.row()*8 + end_pos.col();
-                    if self.state.board[op_pawn_pos] == Some(Piece{color: self.state.player.opp(), role: Role::Pawn}) {
-                        // save move data
-                        played.captured = self.state.board[op_pawn_pos];
-                        played.tp = MoveType::EnPassant;
-                        // capture opp pawn
-                        self.state.board[op_pawn_pos] = None;
-                    }
-                }
-
-                // set en passant
-                if (start_pos.row() as i8 - end_pos.row() as i8).abs() == 2 {
-                    self.state.en_passant = Some(start_pos.col());
-                }
-            },
-            Role::Rook => {
-                // cancel castle
-                match start_pos {
-                    0  => self.state.castle.set(Color::Black, 0, false),  
-                    7  => self.state.castle.set(Color::Black, 1, false),  
-                    56 => self.state.castle.set(Color::White, 0, false), 
-                    63 => self.state.castle.set(Color::White, 1, false),  
-                    _  => {}
-                }
-            },
-            Role::King => {
-                // make castle
-                let row = match piece.color {Color::White => 7, Color::Black => 0};
-                if start_pos.row() == row && end_pos.row() == row && start_pos.col() == 4 {
-                    match end_pos.col() {
-                        2 => { 
-                            self.state.board[row*8 + 3] = Some(Piece{color: self.state.player, role: Role::Rook}); 
-                            self.state.board[row*8 + 0] = None;
-                            // save move data
-                            played.tp = MoveType::Castle((row*8 + 0, row*8 + 3));
-                        },
-                        6 => { 
-                            self.state.board[row*8 + 5] = Some(Piece{color: self.state.player, role: Role::Rook}); 
-                            self.state.board[row*8 + 7] = None;
-                            // save move data
-                            played.tp = MoveType::Castle((row*8 + 7, row*8 + 5));
-                        },
-                        _  => {},
-                    }
-                }
-                // cancel castle
-                self.state.castle.set_side(piece.color, false);
-            },
-            _ => {}
+        if piece.role == Role::Pawn && (mv.start.row() as i8 - mv.end.row() as i8).abs() == 2 {
+            self.state.en_passant = Some(mv.start.col());
         }
 
-        // if rook was captured cancel capture
-        match end_pos {
+        // cancel castle
+        if piece.role == Role::Rook {
+            match mv.start {
+                0  => self.state.castle.set(Color::Black, 0, false),  
+                7  => self.state.castle.set(Color::Black, 1, false),  
+                56 => self.state.castle.set(Color::White, 0, false), 
+                63 => self.state.castle.set(Color::White, 1, false),  
+                _  => {}
+            }
+        }
+        match mv.end {
             0  => self.state.castle.set(Color::Black, 0, false),  
             7  => self.state.castle.set(Color::Black, 1, false),  
             56 => self.state.castle.set(Color::White, 0, false), 
@@ -83,21 +39,29 @@ impl Game {
         }
 
 
-        // possible promotion or basic move
-        if piece.role == Role::Pawn && (end_pos < 8 || end_pos >= 56) {
-            self.state.board[end_pos] = Some(Piece{color: self.state.player, role: Role::Queen});
-            self.state.board[start_pos] = None;
-            played.tp = MoveType::Promotion(Role::Queen);
-        } else {
-            self.state.board[end_pos] = Some(piece);
-            self.state.board[start_pos] = None;
+        // play the move
+        match mv.tp {
+            MoveType::Basic => {
+                self.state.board[mv.end] = self.state.board[mv.start];
+            }
+            MoveType::Promotion(role) => {
+                self.state.board[mv.end] = Some(Piece{color: self.state.player, role});
+            }
+            MoveType::Castle(rook_mv) => {
+                self.state.board[rook_mv.1] = self.state.board[rook_mv.0];
+                self.state.board[rook_mv.0] = None;
+                self.state.board[mv.end] = self.state.board[mv.start];
+                self.state.castle.set_side(piece.color, false);
+            }
+            MoveType::EnPassant(enpassant_pos) => {
+                self.state.board[enpassant_pos] = None;
+                self.state.board[mv.end] = self.state.board[mv.start];
+            }
         }
+        self.state.board[mv.start] = None;
 
 
         // change the player
         self.state.player = self.state.player.opp();
-
-        // update played
-        self.played = Some(played);
     }
 }

@@ -142,7 +142,7 @@ impl fmt::Display for _HistoryDisplay<'_> {
                 if i != 0 {
                     write!(f, " ")?;
                 }
-                write!(f, "[{},{}],", played.mv.0, played.mv.1)?;
+                write!(f, "[{},{}],", played.mv.start, played.mv.end)?;
             }
         }
         Ok(())

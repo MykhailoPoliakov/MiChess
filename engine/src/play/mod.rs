@@ -5,17 +5,33 @@ mod make_move;
 
 
 impl Game {
-    pub fn validate(&self, mv: Move) -> Result<(), MoveError> {
+    pub fn safeplay(&mut self, smv: (u8,u8), role: Option<Role>) -> Result<(), MoveError> {
         if self.state.mode != GameMode::Active {
             return Err(MoveError::WrongMode);
         }
-        if !self.state.board[mv.0].is_some_and(|p| p.color == self.state.player) {
+        if !self.state.board[smv.0].is_some_and(|p| p.color == self.state.player) {
             return Err(MoveError::NoPiece);
         }
-        if !self.cache.legal_moves.contains(&mv) {
+        if !self.cache.legal_moves.iter().any(|mv| mv.start == smv.0 && mv.end == smv.1) {
             return Err(MoveError::IlligalMove);
         }
-        Ok(())
+
+  
+        let mv = if let Some(role) = role {
+            *self.cache.legal_moves.iter().find(|m| m.start == smv.0 && m.end == smv.1 && m.tp == MoveType::Promotion(role)).unwrap()
+        } else {
+            let m =*self.cache.legal_moves.iter().find(|m| m.start == smv.0 && m.end == smv.1).unwrap();
+            if let MoveType::Promotion(_) = m.tp {
+                return Err(MoveError::NoPromotionPiece);
+            }
+            m
+        };
+        
+
+        self.play(mv);
+
+        return Ok(());
+        
     }
 
 
@@ -62,17 +78,16 @@ impl Game {
         let mut count: i32 = 0;
 
         for str_mv in moves.split_whitespace() {
-            let mv = str_to_move(str_mv);
+            let (smv, role) = str_to_safemove(str_mv);
 
-            if self.validate(mv).is_err() {
+            if self.safeplay(smv, role).is_err() {
                 panic!("Move {} wasn't walidated at index: {}", str_mv, count);
             }
-            self.play(mv); 
             count += 1;
         }
     }
 
-    
+
     pub fn unrun(&mut self, amount: i32) {
         for _ in 0..amount {
             self.undo(); 

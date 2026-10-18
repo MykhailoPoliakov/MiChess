@@ -26,7 +26,7 @@ impl Game {
 
         // en passant
         if let Some(en_passant) = self.state.en_passant {
-            if match piece.color {Color::White => (pos / 8) as i8 == 3, Color::Black => (pos / 8) as i8 == 4} {
+            if match piece.color {Color::White => pos.row() == 3, Color::Black => pos.row() == 4} {
                 let target = match piece.color { Color::White => 2*8, Color::Black => 5*8 } + en_passant as u8;
                 if PAWN_ATTACKS[piece.color as usize][pos].get(target) {
                     self.cache.legal[pos].set(target);

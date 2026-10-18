@@ -13,17 +13,6 @@ impl PosExt for u8 {
 }
 
 
-pub type Move = (Pos, Pos);
-
-pub fn str_to_move(pos: &str) -> (u8, u8) {
-    let bytes = pos.as_bytes();
-    ((b'8' - bytes[1])*8 + (bytes[0] - b'a'), (b'8' - bytes[3])*8 + (bytes[2] - b'a'))
-}
-
-pub fn move_to_str(mv: Move) -> String {
-    format!("{} {}", pos_to_str(mv.0), pos_to_str(mv.1))
-}
-
 pub fn pos_to_str(pos: Pos) -> String {
     let col = (b'a' + pos % 8) as char;
     let row = 8 - pos / 8;
@@ -36,14 +25,13 @@ pub enum MoveType {
     Basic,
     Promotion(Role),
     Castle((Pos,Pos)),
-    EnPassant,
+    EnPassant(Pos),
 }
 
 
 #[derive(Copy, Clone)]
 pub struct PlayedMove {
     pub mv: Move,
-    pub tp: MoveType,
     pub captured: Option<Piece>,
     pub old_en_passant: Option<u8>,
     pub old_castle: Castle,
@@ -58,30 +46,36 @@ pub enum MoveError {
     NoPromotionPiece
 }
 
-
-pub struct Mv {
-    pub st: Pos,
+#[derive(Copy, Clone, PartialEq)]
+pub struct Move {
+    pub start: Pos,
     pub end: Pos,
     pub tp: MoveType
 }
 
-impl Mv {
-    pub fn new(st: Pos, end: Pos) -> Self {
-        Mv {
-            st,
+impl Move {
+    pub fn new(start: Pos, end: Pos) -> Self {
+        Move {
+            start,
             end,
             tp: MoveType::Basic
         }
     }
 
-
-    pub fn from_str(pos: &str) -> Self {
-        let bytes = pos.as_bytes();
-        Mv::new((b'8' - bytes[1])*8 + (bytes[0] - b'a'), (b'8' - bytes[3])*8 + (bytes[2] - b'a'))
-    }
-
     pub fn to_str(&self) -> String {
-        format!("{} {}", pos_to_str(self.st), pos_to_str(self.end))
+        format!("{}{}", pos_to_str(self.start), pos_to_str(self.end))
     }
+}
+
+pub fn str_to_safemove(pos: &str) -> ((u8,u8), Option<Role>) {
+    let bytes = pos.as_bytes();
+
+    let role = bytes.get(4).map(|b| match b {
+        b'r' => Role::Rook,
+        b'b' => Role::Bishop,
+        b'n' => Role::Knight,
+        _    => Role::Queen,
+    });
+    (((b'8' - bytes[1])*8 + (bytes[0] - b'a'), (b'8' - bytes[3])*8 + (bytes[2] - b'a')), role)
 }
     

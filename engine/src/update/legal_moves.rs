@@ -12,22 +12,51 @@ impl Game {
         let king_pos = self.cache.king_pos[self.state.player as usize];
 
         // fill
-        for pos in 0..64u8 {
-            match self.state.board[pos] {
+        for start_pos in 0..64u8 {
+            match self.state.board[start_pos] {
                 Some(piece) if piece.color == self.state.player => {
-                    let mut bits = self.cache.legal[pos].0;
-                    bits &= pins[pos as usize];
+                    let mut bits = self.cache.legal[start_pos].0;
+                    bits &= pins[start_pos as usize];
 
                     while bits != 0 {
                         let end_pos = bits.trailing_zeros() as u8;
-                        self.cache.legal_moves.push((pos, end_pos));
+
+                        match piece.role {
+                            // promotion
+                            Role::Pawn if end_pos < 8 || end_pos >= 56 => {
+                                self.cache.legal_moves.push(Move {start: start_pos, end: end_pos, tp: MoveType::Promotion(Role::Queen)});
+                                self.cache.legal_moves.push(Move {start: start_pos, end: end_pos, tp: MoveType::Promotion(Role::Rook)});
+                                self.cache.legal_moves.push(Move {start: start_pos, end: end_pos, tp: MoveType::Promotion(Role::Bishop)});
+                                self.cache.legal_moves.push(Move {start: start_pos, end: end_pos, tp: MoveType::Promotion(Role::Knight)});
+                            }
+                            // en passant
+                            Role::Pawn if Some(end_pos.col()) == self.state.en_passant && 
+                            match piece.color {Color::White => start_pos.row() == 3, Color::Black => start_pos.row() == 4} => {
+                                self.cache.legal_moves.push(Move {
+                                    start: start_pos, end: end_pos, tp: MoveType::EnPassant(start_pos.row()*8 + end_pos.col())
+                                });
+                            },
+                            // castle
+                            Role::King if start_pos.col() == 4 && (end_pos.col() == 2 || end_pos.col() == 6) => {
+                                let row = match piece.color {Color::White => 7, Color::Black => 0};
+                                let tp = match end_pos.col() {
+                                    2 => MoveType::Castle((row*8 + 0, row*8 + 3)),
+                                    _ => MoveType::Castle((row*8 + 7, row*8 + 5)),
+                                };
+
+                                self.cache.legal_moves.push(Move {start: start_pos, end: end_pos, tp});
+                            }
+                            _ => {
+                                self.cache.legal_moves.push(Move {start: start_pos, end: end_pos, tp: MoveType::Basic});
+                            }
+                        }
                         bits &= bits - 1;
                     }
                 },
                 Some(piece) if piece.color == self.state.player.opp() => {
-                    if self.cache.cover[pos].get(king_pos) {
+                    if self.cache.cover[start_pos].get(king_pos) {
                         king_attakers += 1;
-                        attacker_pos = pos;
+                        attacker_pos = start_pos;
                     }
                 },
                 _ => {}
@@ -45,8 +74,8 @@ impl Game {
                     }
                     _ => 1u64 << attacker_pos,
                 };
-                self.cache.legal_moves.retain(|(start, end)| {
-                    *start == king_pos || (block_mask & (1u64 << end)) != 0
+                self.cache.legal_moves.retain(|mv| {
+                    mv.start == king_pos || (block_mask & (1u64 << mv.end)) != 0
                 });
             }
             _ => {
@@ -56,7 +85,7 @@ impl Game {
                 let mut bits = self.cache.legal[king_pos].0;
                 while bits != 0 {
                     let end_pos = bits.trailing_zeros() as u8;
-                    self.cache.legal_moves.push((king_pos, end_pos));
+                    self.cache.legal_moves.push(Move::new(king_pos, end_pos));
                     bits &= bits - 1;
                 };
             }

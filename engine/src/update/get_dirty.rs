@@ -8,8 +8,8 @@ impl Game {
             let mut dirty = BitBoard::new();
 
             // update move
-            self.mark_dirty(played.mv.0, &mut dirty);
-            self.mark_dirty(played.mv.1, &mut dirty);
+            self.mark_dirty(played.mv.start, &mut dirty);
+            self.mark_dirty(played.mv.end, &mut dirty);
 
             // all 3 and 4 rank pawn in case of en passant
             for pos in 24..40 {
@@ -18,10 +18,10 @@ impl Game {
                 }
             }
 
-            match played.tp {
+            match played.mv.tp {
                 // update captured pawn
-                MoveType::EnPassant => {
-                    self.mark_dirty(played.mv.0.row()*8 + played.mv.1.col(), &mut dirty);  
+                MoveType::EnPassant(enpassant_pos) => {
+                    self.mark_dirty(enpassant_pos, &mut dirty);  
                 },
                 // update rook
                 MoveType::Castle(rook_mv) => {

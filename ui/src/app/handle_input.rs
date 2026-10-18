@@ -12,10 +12,7 @@ impl App {
             println!("{}", self.game);
             if self.game.state.mode == GameMode::Active {
                 self.game.start_search();
-                if self.game.validate(self.game.search.result.clone().unwrap().mv).is_ok() {
-                    self.game.play(self.game.search.result.clone().unwrap().mv);
-                }
-                
+                self.game.play(self.game.search.result.clone().unwrap().mv);
             }    
         }
 
@@ -105,8 +102,7 @@ impl App {
                         let chess_pos = ((pos.y / self.square_size) as u8)*8 + (pos.x / self.square_size) as u8;
                         
                         if Some(chess_pos) != self.selected {
-                            if self.game.validate((selected, chess_pos)).is_ok() {
-                                timed(|| self.game.play((selected, chess_pos)));
+                            if self.game.safeplay((selected, chess_pos), None).is_ok() {
                                 self.selected = None;
                             }
                         }

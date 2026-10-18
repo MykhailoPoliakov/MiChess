@@ -41,9 +41,9 @@ impl Game {
     fn rule_50_check(&mut self) {
         // reset
         if let Some(played) = self.played {
-            if self.state.board[played.mv.1].is_some_and( |p| p.role == Role::Pawn) || 
+            if self.state.board[played.mv.end].is_some_and( |p| p.role == Role::Pawn) || 
             played.captured.is_some() ||
-            played.tp != MoveType::Basic {
+            played.mv.tp != MoveType::Basic {
                 self.state.rule_50moves = 0;
             }
         }
