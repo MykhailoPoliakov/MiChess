@@ -61,6 +61,20 @@ impl App {
         }
 
 
+        match self.game.state.mode {
+            GameMode::Finished(_) => {
+                painter.rect_filled(
+                    egui::Rect::from_min_size(self.board_pos,
+                    egui::vec2(self.square_size * 8.0, self.square_size * 8.0)),
+                    0.0, 
+                    egui::Color32::from_rgba_unmultiplied(128, 128, 128, 40),
+                );
+            }
+            _ => {},
+        }
+        
+
+
     }
 
 

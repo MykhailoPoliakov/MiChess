@@ -38,6 +38,14 @@ pub struct PlayedMove {
     pub move_count: u8,
 }
 
+impl PartialEq for PlayedMove {
+    fn eq(&self, other: &Self) -> bool {
+        self.mv == other.mv
+            && self.old_en_passant == other.old_en_passant
+            && self.old_castle == other.old_castle
+    }
+}
+
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum MoveError {

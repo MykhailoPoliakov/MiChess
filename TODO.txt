@@ -4,6 +4,8 @@ engine:
     3 repetition rule
     remake en_passant and remake dirty en_passant
     make search tests
+    draw is badly tracked
+    m(2) > m(1) fix
 
 ui:
     better structure

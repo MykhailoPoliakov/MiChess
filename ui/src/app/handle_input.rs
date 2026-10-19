@@ -27,15 +27,11 @@ impl App {
         if ui.input(|i| i.key_pressed(egui::Key::Z)) {
             self.game.undo();
             self.game.start_search();
+            println!("{}", self.game.search);
         }
 
         if ui.input(|i| i.key_pressed(egui::Key::E)) {
             self.game.start_search();
-            match self.game.search.eval(self.game.state.player) {
-                Some(Eval::Value(value)) => println!("Game Eval: {}", value),
-                Some(Eval::Mate(value)) => println!("Mate in {}", value),
-                _ => {},
-            }  
             println!("{}", self.game.search);
         }
 

@@ -14,13 +14,6 @@ where F: FnOnce() -> T {
 
 
 
-fn main() -> () { 
-
-    // let mut sum = 0;
-    // for i in LIST {
-    //     sum += i;
-    // }
-    // println!("{}", sum);
-
-    app::run();
+fn main() {
+    app::run()
 }

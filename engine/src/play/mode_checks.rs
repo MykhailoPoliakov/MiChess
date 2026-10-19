@@ -6,6 +6,7 @@ impl Game {
         self.stalemate_and_win_check();
         self.no_material_check();
         self.rule_50_check();
+        self.repeating_moves_check();
     }
 
 
@@ -55,6 +56,31 @@ impl Game {
             self.state.mode = GameMode::Finished(None);
             return;
         }
+    }
+
+    fn repeating_moves_check(&mut self) {
+        if self.history.len() < 12 {
+            return;
+        }
+
+        let last_played = self.history.last().unwrap();
+        let op_last_played = &self.history[self.history.len() - 2];
+        
+        let mut count: [i32; 2] = [0,0];
+
+        for played in self.history.iter().rev().take(12) {
+            if last_played == played {
+                count[0] += 1;
+            } 
+            if op_last_played == played {
+                count[1] += 1;
+            }
+        }
+
+        if count[0] >= 3 && count[1] >= 3 {
+            self.state.mode = GameMode::Finished(None);
+        }
+
     }
 
 }

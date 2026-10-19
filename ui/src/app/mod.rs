@@ -17,7 +17,7 @@ struct App {
     dragged: Option<egui::Pos2>,
 
     square_size: f32,
-    _board_pos: egui::Pos2,
+    board_pos: egui::Pos2,
 }
 
 impl App {
@@ -31,7 +31,7 @@ impl App {
             dragged: None,
 
             square_size: 80.0,
-            _board_pos: egui::Pos2::new(0.0, 0.0),
+            board_pos: egui::Pos2::new(0.0, 0.0),
         }
     }
 }
@@ -49,12 +49,12 @@ impl eframe::App for App {
 
 pub fn run() {
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([720.0, 640.0]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([720.0, 640.0]),
+        renderer: eframe::Renderer::Glow,
         ..Default::default()
     };
 
-    let _ = eframe::run_native(
+    _ = eframe::run_native(
         "MiChess", options,
         Box::new(|cc: &eframe::CreationContext<'_>| Ok(Box::new(App::new(cc)))),
     );
