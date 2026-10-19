@@ -14,30 +14,30 @@ impl Game {
                 match piece.color {
                     Color::White => {
                         value += eval_material(piece.role);
-                        // value += eval_value_grid(pos, piece, phase);
-                        // value += eval_mobility(&self.cache.legal[pos], piece);
-                        // value += eval_king_attack(pos, self.cache.king_pos[1]);
-                        // // if pawns protecting the king
-                        // if phase[1] > 10 && piece.role == Role::Pawn && self.cache.cover[self.cache.king_pos[0]].get(pos) {
-                        //     value += 30
-                        // }
+                        value += eval_value_grid(pos, piece, phase);
+                        value += eval_mobility(&self.cache.legal[pos], piece);
+                        value += eval_king_attack(pos, self.cache.king_pos[1]);
+                        // if pawns protecting the king
+                        if phase[1] > 10 && piece.role == Role::Pawn && self.cache.cover[self.cache.king_pos[0]].get(pos) {
+                            value += 30
+                        }
                     }
                     Color::Black => {
                         value -= eval_material(piece.role);
-                        // value -= eval_value_grid(pos, piece, phase);
-                        // value -= eval_mobility(&self.cache.legal[pos], piece);
-                        // value -= eval_king_attack(pos, self.cache.king_pos[0]);
-                        // // if pawns protecting the king
-                        // if phase[0] > 10 && piece.role == Role::Pawn && self.cache.cover[self.cache.king_pos[1]].get(pos) {
-                        //     value -= 30
-                        // }
+                        value -= eval_value_grid(pos, piece, phase);
+                        value -= eval_mobility(&self.cache.legal[pos], piece);
+                        value -= eval_king_attack(pos, self.cache.king_pos[0]);
+                        // if pawns protecting the king
+                        if phase[0] > 10 && piece.role == Role::Pawn && self.cache.cover[self.cache.king_pos[1]].get(pos) {
+                            value -= 30
+                        }
                     }
                 }
             }
         }
 
-        // value += self.eval_pawn_struct();
-        // value += self.eval_king_safety();
+        value += self.eval_pawn_struct();
+        value += self.eval_king_safety();
         
         value
     }

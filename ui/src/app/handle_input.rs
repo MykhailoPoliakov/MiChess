@@ -12,7 +12,9 @@ impl App {
             println!("{}", self.game);
             if self.game.state.mode == GameMode::Active {
                 self.game.start_search();
-                self.game.play(self.game.search.result.clone().unwrap().mv);
+                self.game.play(self.game.search.mv(self.game.state.player).unwrap());
+                self.game.start_search();
+                println!("{}", self.game.search);
             }    
         }
 
@@ -24,18 +26,19 @@ impl App {
         // undo last move
         if ui.input(|i| i.key_pressed(egui::Key::Z)) {
             self.game.undo();
+            self.game.start_search();
         }
 
         if ui.input(|i| i.key_pressed(egui::Key::E)) {
             self.game.start_search();
-            if let Some(result) = &self.game.search.result {
-                match result.eval {
-                    Eval::Value(value) => println!("Game Eval: {}", value),
-                    Eval::Mate(value) => println!("Mate in {}", value),
-                }  
-            }
+            match self.game.search.eval(self.game.state.player) {
+                Some(Eval::Value(value)) => println!("Game Eval: {}", value),
+                Some(Eval::Mate(value)) => println!("Mate in {}", value),
+                _ => {},
+            }  
+            println!("{}", self.game.search);
         }
-        
+
 
     }
 
@@ -104,6 +107,7 @@ impl App {
                         if Some(chess_pos) != self.selected {
                             if self.game.safeplay((selected, chess_pos), None).is_ok() {
                                 self.selected = None;
+                                self.game.start_search();
                             }
                         }
 

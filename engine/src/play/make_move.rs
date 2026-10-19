@@ -7,11 +7,12 @@ impl Game {
         let piece = self.state.board[mv.start].unwrap();
         
         // save played move
-        self.played = Some(PlayedMove {
+        self.history.push(PlayedMove {
             mv, 
             captured: if let MoveType::EnPassant(enpassant_pos) = mv.tp {self.state.board[enpassant_pos]} else {self.state.board[mv.end]}, 
             old_en_passant: self.state.en_passant,
             old_castle: self.state.castle,
+            move_count: self.state.move_count
         });
 
         // reset en_passant

@@ -35,6 +35,7 @@ pub struct PlayedMove {
     pub captured: Option<Piece>,
     pub old_en_passant: Option<u8>,
     pub old_castle: Castle,
+    pub move_count: u8,
 }
 
 

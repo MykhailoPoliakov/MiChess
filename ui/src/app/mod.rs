@@ -17,7 +17,7 @@ struct App {
     dragged: Option<egui::Pos2>,
 
     square_size: f32,
-    board_pos: egui::Pos2,
+    _board_pos: egui::Pos2,
 }
 
 impl App {
@@ -31,7 +31,7 @@ impl App {
             dragged: None,
 
             square_size: 80.0,
-            board_pos: egui::Pos2::new(0.0, 0.0),
+            _board_pos: egui::Pos2::new(0.0, 0.0),
         }
     }
 }

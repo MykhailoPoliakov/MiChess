@@ -87,7 +87,7 @@ impl fmt::Display for Game {
                     1 => writeln!(f, "7  |")?,
                     2 => writeln!(f, "6  |  Castle: {:?}", self.state.castle)?,
                     3 => writeln!(f, "5  |  En passant: {:?}", self.state.en_passant)?,
-                    4 => writeln!(f, "4  |  50 moves rule: {}", self.state.rule_50moves)?,
+                    4 => writeln!(f, "4  |  50 moves rule: {}", self.state.move_count)?,
                     5 => writeln!(f, "3  |  Check: {}", self.cache.check)?,
                     6 => writeln!(f, "2  |  Moves played: {}", self.history.len())?,
                     7 => writeln!(f, "1  |  Game mode: {:?}", self.state.mode)?,
@@ -124,27 +124,18 @@ impl fmt::Display for Game {
 
         }
 
-        // writeln!(f, "\ntransformer White: {:?}", self.transformer.0)?;
-        // writeln!(f, "transformer Black: {:?}", self.transformer.1)?;
-
         writeln!(f,"\n")
     }
 }
 
 
 
-pub struct _HistoryDisplay<'a>(pub &'a [GameLog]);
-
-impl fmt::Display for _HistoryDisplay<'_> {
+impl fmt::Display for SearchInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (i, log) in self.0.iter().enumerate() {
-            if let Some(played) = log.played {
-                if i != 0 {
-                    write!(f, " ")?;
-                }
-                write!(f, "[{},{}],", played.mv.start, played.mv.end)?;
-            }
+        writeln!(f,"\n")?;
+        for i in &self.moves {
+            writeln!(f, "{} {:?} Iterations: {}", i.0.to_str(), i.1, i.2)?;
         }
-        Ok(())
+        writeln!(f)
     }
 }

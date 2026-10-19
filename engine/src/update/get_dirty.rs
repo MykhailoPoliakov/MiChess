@@ -4,19 +4,35 @@ use super::*;
 impl Game {
     pub(super) fn get_dirty(&self) -> BitBoard {
         // if not first move
-        if let Some(played) = self.played {
+        if let Some(played) = self.history.last() {
             let mut dirty = BitBoard::new();
 
             // update move
             self.mark_dirty(played.mv.start, &mut dirty);
             self.mark_dirty(played.mv.end, &mut dirty);
 
-            // all 3 and 4 rank pawn in case of en passant
+            // // update en passant
+            // if let Some(prev_played)  = self.history.iter().rev().nth(1) {
+            //     if prev_played.old_en_passant.is_some() {
+            //         for pos in 24..40 {
+            //             if self.state.board[pos].is_some_and(|p| p.role == Role::Pawn) {
+            //                 dirty.set(pos);
+            //             }
+            //         }
+            //     }
+            // }
+            // if played.old_en_passant.is_some() {
+
+            // }
+
+
             for pos in 24..40 {
                 if self.state.board[pos].is_some_and(|p| p.role == Role::Pawn) {
                     dirty.set(pos);
                 }
             }
+
+            
 
             match played.mv.tp {
                 // update captured pawn

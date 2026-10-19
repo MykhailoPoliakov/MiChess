@@ -2,6 +2,7 @@ use super::*;
 
 mod mode_checks;
 mod make_move;
+mod undo_move;
 
 
 impl Game {
@@ -27,7 +28,6 @@ impl Game {
             m
         };
         
-
         self.play(mv);
 
         return Ok(());
@@ -35,15 +35,8 @@ impl Game {
     }
 
 
-    // makes a move, returns bool
     pub fn play(&mut self, mv: Move) {
         
-        // save history
-        self.history.push( GameLog {
-            state: self.state.clone(),
-            played: self.played,
-        });
-
         // play move
         self.make_move(mv);
 
@@ -57,18 +50,18 @@ impl Game {
     
     pub fn undo(&mut self) -> bool {
         // check if history is not empty and pop last
-        let Some(log) = self.history.pop() else {
+        if self.history.is_empty() {
             return false;
         };
 
         // undo state
-        self.state = log.state;
-        
+        self.undo_move();
+
         // update cache with current played
         self.update();
 
         // undo played
-        self.played = log.played;
+        self.history.pop();
 
         return true;        
     }

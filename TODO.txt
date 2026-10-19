@@ -1,11 +1,19 @@
+engine:
+    impliment alpha-beta pruning 
+    better eval
+    3 repetition rule
+    remake en_passant and remake dirty en_passant
+    make search tests
+
+ui:
+    better structure
+    make an app idea
+    
+    
 
 
-no alpha-beta pruning 
-no transposition table
 
-nnue
 
-eval
 
 
 

@@ -40,18 +40,18 @@ impl Game {
 
     fn rule_50_check(&mut self) {
         // reset
-        if let Some(played) = self.played {
+        if let Some(played) = self.history.last() {
             if self.state.board[played.mv.end].is_some_and( |p| p.role == Role::Pawn) || 
             played.captured.is_some() ||
             played.mv.tp != MoveType::Basic {
-                self.state.rule_50moves = 0;
+                self.state.move_count = 0;
             }
         }
         // add move
-        self.state.rule_50moves += 1;
+        self.state.move_count += 1;
 
         // if over the limit
-        if self.state.rule_50moves >= 100 {
+        if self.state.move_count >= 100 {
             self.state.mode = GameMode::Finished(None);
             return;
         }

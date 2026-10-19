@@ -50,7 +50,7 @@ fn status(mode: &GameMode, depth: i8) -> Option<i32> {
         &GameMode::Finished(None) => Some(0),
         &GameMode::Finished(Some(color)) => {
             let sign = if color == Color::White { 1 } else { -1 };
-            Some(MATE_VALUE[color as usize] - (depth / 2) as i32 * sign)
+            Some(MATE_VALUE[color as usize] - ((depth / 2) + 1) as i32 * sign)
         }
     }
 }
@@ -63,7 +63,7 @@ impl Game {
             return false;
         }
 
-        if let Some(played) = self.played {
+        if let Some(played) = self.history.last() {
             // capture
             if played.captured.is_some() {
                 return true;
